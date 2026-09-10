@@ -802,7 +802,30 @@ function aiRecommendation(scene, profile){
   else if(depth==='Deep') aperture=profile==='Landscape' ? 'f/8' : 'f/4';
   else aperture=profile==='Street' ? 'f/3.2' : 'f/2.8';
 
-  if(light==='Very Low'){
+  // Low-light calibration: for a static/near-static indoor scene, exposure
+  // must remain usable. Open the lens and allow a slower handheld shutter
+  // before settling on a higher ISO. Do not let the generic Deep-depth rule
+  // force f/4 in a scene that is demonstrably very dark.
+  if((light==='Very Low' || light==='Low') && (movement==='None' || movement==='Low')){
+    if(profile==='Portrait'){
+      aperture='f/2.8';
+      shutter='1/60';
+      iso=light==='Very Low' ? '1600' : '800';
+    } else if(profile==='Landscape'){
+      aperture='f/4';
+      shutter='1/15';
+      iso=light==='Very Low' ? '800' : '400';
+    } else if(profile==='Street'){
+      aperture='f/2.8';
+      shutter='1/125';
+      iso=light==='Very Low' ? '3200' : '1600';
+    } else {
+      aperture='f/4';
+      shutter='1/30';
+      iso=light==='Very Low' ? '1600' : '800';
+    }
+    title='HOLD DETAIL';
+  } else if(light==='Very Low'){
     iso = movement==='None' ? '400' : movement==='Low' ? '800' : '1600';
     title='PROTECT';
   }
@@ -818,9 +841,13 @@ function aiRecommendation(scene, profile){
   // Only introduce it later when scene analysis provides actual highlight risk.
   if(light==='Very Low' || light==='Low') ev='0 EV';
 
-  if(scene.color_temperature==='Warm') wb='5600K';
-  else if(scene.color_temperature==='Cool') wb='4000K';
+  // Avoid false Kelvin precision indoors. Practical/mixed warm sources are
+  // better left to the camera's Auto WB unless the photographer explicitly
+  // chooses a fixed temperature later.
+  if((scene.environment==='Indoor' || scene.environment==='indoor') && (light==='Low' || light==='Very Low')) wb='AUTO';
   else if(scene.color_temperature==='Mixed') wb='AUTO';
+  else if(scene.color_temperature==='Warm') wb='AUTO';
+  else if(scene.color_temperature==='Cool') wb='4000K';
 
   if(depth==='Shallow'){ title='ISOLATE'; }
   if(depth==='Deep'){ title='HOLD DETAIL'; }
@@ -846,7 +873,8 @@ function aiRecommendation(scene, profile){
       : depth==='Shallow' ? 'f/2.0'
       : aperture==='f/8' ? 'f/5.6' : aperture,
     shutter: movement==='Very High' ? '1/1000' : movement==='High' ? '1/500' : shutter,
-    iso: (light==='Low' || light==='Very Low') && depth!=='Shallow' ? '100'
+    iso: (light==='Low' || light==='Very Low') && depth!=='Shallow'
+      ? (profile==='Portrait' ? (light==='Very Low' ? '800' : '400') : Math.max(100, Math.round(Number(iso)/2)))
       : movement==='High' || movement==='Very High' ? (iso==='100'?'400':iso) : iso,
     wb, ev
   };
