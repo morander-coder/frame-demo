@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0B0B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FRAME">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRAME</title>
+<style>
+:root{
+  --bg:#0b0b0b;
+  --surface:#151515;
+  --surface2:#1d1d1b;
+  --text:#f4f1ea;
+  --muted:#98958e;
+  --faint:#66635e;
+  --line:#2a2926;
+  --accent:#E3000B;
+  --accent-soft:rgba(227,0,11,.10);
+  --danger:#d28f83;
+  --shadow:0 18px 55px rgba(0,0,0,.28);
+}
+body.light{
+  --bg:#f4f1ea;
+  --surface:#ffffff;
+  --surface2:#eeece6;
+  --text:#171717;
+  --muted:#6e6a63;
+  --faint:#8d8981;
+  --line:#d9d5cd;
+  --accent:#E3000B;
+  --accent-soft:rgba(227,0,11,.10);
+  --danger:#a75f53;
+  --shadow:0 18px 55px rgba(30,25,18,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif}
+body{transition:background .25s,color .25s}
+button{font:inherit;color:inherit}
+.app{max-width:430px;height:100vh;margin:auto;background:var(--bg);position:relative;overflow:hidden}
+.screen{display:none;height:100vh;padding:24px 22px 24px;overflow:hidden}
+.screen.active{display:block}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px}
+.brand{font-size:14px;letter-spacing:.24em;font-weight:700}
+.kicker{font-size:10px;letter-spacing:.19em;color:var(--muted);text-transform:uppercase}
+.icon-btn{width:38px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:50%;display:grid;place-items:center;cursor:pointer}
+h1{font-size:35px;line-height:1.02;letter-spacing:-.045em;margin:0 0 12px;font-weight:600}
+h2{font-size:23px;letter-spacing:-.025em;margin:0 0 8px}
+p{color:var(--muted);line-height:1.42;margin:0}
+.hero{padding-top:22px}
+.profile-chip{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--surface);width:100%;padding:13px 15px;border-radius:14px;margin:22px 0 18px;cursor:default}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.profile-chip span{font-size:12px}
+.profile-meta{font-size:11px;color:var(--muted);line-height:1.65}
+.primary{
+  width:100%;border:0;background:var(--accent);color:#fff;padding:17px 18px;border-radius:12px;
+  font-weight:700;letter-spacing:.02em;cursor:pointer;box-shadow:var(--shadow)
+}
+.secondary{
+  width:100%;border:1px solid var(--line);background:var(--surface);padding:16px 18px;border-radius:12px;
+  cursor:pointer
+}
+.stack{display:grid;gap:10px}
+.note{font-size:11px;color:var(--faint);text-align:center;margin-top:13px}
+.cards{display:grid;gap:8px}
+.profile-card{
+  padding:13px;border:1px solid var(--line);background:var(--surface);border-radius:14px;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center
+}
+.profile-card.active{border-color:var(--accent);background:var(--accent-soft)}
+.profile-card h3{margin:0 0 5px;font-size:16px;font-weight:600}
+.profile-card p{font-size:11px}
+.chev{color:var(--muted)}
+.camera{
+  height:min(55vh,430px);border-radius:18px;background:
+  radial-gradient(circle at 68% 32%,rgba(255,255,255,.13),transparent 24%),
+  linear-gradient(145deg,#34312d,#171717 54%,#0c0c0c);
+  position:relative;overflow:hidden;border:1px solid var(--line);display:flex;align-items:center;justify-content:center
+}
+body.light .camera{background:linear-gradient(145deg,#d6d0c6,#aaa39a 50%,#777169)}
+.camera:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 48%,rgba(0,0,0,.22));pointer-events:none}
+.reticle{width:140px;height:140px;border:1px solid rgba(255,255,255,.68);position:relative}
+.reticle:before,.reticle:after{content:"";position:absolute;background:rgba(255,255,255,.68)}
+.reticle:before{width:1px;height:12px;left:50%;top:-6px}
+.reticle:after{height:1px;width:12px;left:-6px;top:50%}
+.camera-label{position:absolute;z-index:2;top:15px;left:16px;font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.82)}
+.camera-bottom{position:absolute;z-index:2;bottom:15px;left:16px;right:16px;display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.82)}
+.loading{height:min(55vh,430px);border:1px solid var(--line);border-radius:18px;background:var(--surface);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px}
+.loader{width:30px;height:30px;border:1px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.settings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:14px 0}
+.setting{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:10px}
+.setting .label{font-size:9px;color:var(--muted);letter-spacing:.13em;text-transform:uppercase;margin-bottom:8px}
+.setting .value{font-size:17px;letter-spacing:-.02em}
+.setting .sub{font-size:10px;color:var(--muted);margin-top:3px}
+.recommend{
+  border:1px solid var(--accent);background:var(--accent-soft);border-radius:15px;padding:13px;margin-top:14px
+}
+.recommend-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.recommend-title{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)}
+.conf{font-size:10px;color:var(--muted)}
+.why{margin-top:8px;font-size:10px;color:var(--muted);line-height:1.45}
+.alt{border:1px solid var(--line);border-radius:15px;padding:11px 13px;margin-top:8px;background:var(--surface)}
+.alt-head{display:flex;justify-content:space-between;align-items:center}
+.alt-title{font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.alt p{font-size:11px;margin-top:8px}
+.settings-section{margin-top:18px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line)}
+.settings-row strong{font-size:14px;font-weight:500}
+.settings-row span{font-size:12px;color:var(--muted)}
+.segment{display:flex;background:var(--surface);border:1px solid var(--line);padding:3px;border-radius:10px}
+.segment button{border:0;background:transparent;padding:7px 8px;border-radius:7px;font-size:11px;cursor:pointer}
+.segment button.selected{background:var(--accent);color:#fff;font-weight:700}
+.back{border:0;background:transparent;padding:0;color:var(--muted);cursor:pointer;font-size:12px}
+.hidden{display:none!important}
+input::placeholder{color:var(--faint)}
+.small-actions{display:flex;gap:9px;margin-top:14px}
+.small-actions button{flex:1}
+.footer-mark{margin-top:38px;text-align:center;color:var(--faint);font-size:9px;letter-spacing:.2em}
+/* FRAME principle: every screen is designed to fit without scrolling. */
+
+/* FRAME — HAPTICS FINAL
+   Keep the existing compact segmented-control geometry.
+   ON is neutral. OFF is red only inside the selected segment.
+   The surrounding frame remains neutral. */
+.settings-row:has(#hapticsOn) .segment{
+  display:inline-flex !important;
+  width:auto !important;
+  min-width:0 !important;
+  flex:0 0 auto !important;
+  padding:3px !important;
+  border:1px solid var(--line) !important;
+  background:var(--surface) !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+}
+.settings-row:has(#hapticsOn) .segment button{
+  display:block !important;
+  flex:0 0 42px !important;
+  width:42px !important;
+  min-width:42px !important;
+  max-width:42px !important;
+  height:28px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:7px !important;
+  box-shadow:none !important;
+  outline:none !important;
+  font-size:11px !important;
+  line-height:28px !important;
+  text-align:center !important;
+}
+#hapticsOn.selected{
+  background:var(--surface) !important;
+  color:var(--text) !important;
+  border:0 !important;
+  box-shadow:none !important;
+  outline:none !important;
+}
+#hapticsOff.selected{
+  background:#E3000B !important;
+  color:#fff !important;
+  border:0 !important;
+  box-shadow:none !important;
+  outline:none !important;
+}
+#hapticsOn:not(.selected),
+#hapticsOff:not(.selected){
+  background:transparent !important;
+  color:var(--muted) !important;
+  border:0 !important;
+  box-shadow:none !important;
+  outline:none !important;
+}
+
+
+/* Appearance control — intentionally static across Light / Dark / Auto */
+#appearanceSegment {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 3px;
+  border-radius: 10px;
+}
+
+#appearanceSegment button {
+  flex: 0 0 42px;
+  width: 42px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 7px 0;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+#appearanceSegment button.selected {
+  background: #E3000B;
+  color: #FFFFFF;
+  font-weight: 400;
+}
+
+</style>
+
+<style id="frame-v1-design">
+:root{
+  --accent:#E3000B;
+  --accent-soft:rgba(227,0,11,.10);
+  --accent-pressed:#B30008;
+}
+.btn.primary,
+.btn.feedback-active,
+button.primary,
+button.feedback-active{
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:#fff !important;
+}
+.btn.primary:active,
+.btn.feedback-active:active,
+button.primary:active,
+button.feedback-active:active{
+  background:var(--accent-pressed) !important;
+  border-color:var(--accent-pressed) !important;
+  color:#fff !important;
+}
+</style>
+
+
+<style id="frame-v1-red-theme">
+:root{
+  --accent:#E3000B !important;
+  --accent-soft:rgba(227,0,11,.10) !important;
+  --accent-pressed:#B30008 !important;
+}
+.btn.primary,
+.btn.feedback-active,
+button.primary,
+button.feedback-active{
+  background:#E3000B !important;
+  border-color:#E3000B !important;
+  color:#fff !important;
+}
+.btn.primary:active,
+.btn.feedback-active:active,
+button.primary:active,
+button.feedback-active:active{
+  background:#B30008 !important;
+  border-color:#B30008 !important;
+  color:#fff !important;
+}
+</style>
+
+
+<style id="frame-v1-green-recommendation">
+:root{
+  --recommend:#3F8F68;
+  --recommend-soft:rgba(63,143,104,.10);
+  --recommend-line:rgba(63,143,104,.48);
+}
+
+/* Recommendation container: green means FRAME recommends / confirms,
+   while red remains reserved for user actions. */
+.recommendation,
+.recommended,
+.rec,
+[class*="recommend"]{
+  --recommend-color:var(--recommend);
+}
+
+/* Target the existing recommendation card without recoloring unrelated UI. */
+.rec{
+  border-color:var(--recommend-line) !important;
+  background:var(--recommend-soft) !important;
+}
+.rec .kicker{
+  color:var(--recommend) !important;
+}
+
+/* Recommendation settings should remain visually neutral.
+   The green belongs to the recommendation container, not each setting. */
+.rec .setting{
+  border-color:var(--line) !important;
+}
+
+
+</style>
+
+
+<style id="frame-v1-4-recommendation-neutral">
+/* Recommended Starting Point: calm/neutral container.
+   Red remains reserved for action; the recommendation label may stay red. */
+.rec{
+  background:var(--surface) !important;
+  border-color:var(--line) !important;
+}
+.rec .kicker{
+  color:var(--accent) !important;
+}
+</style>
+
+
+<style id="frame-v1-5-recommendation-neutral">
+/* Recommended Starting Point now uses exactly the same neutral treatment
+   as Creative Alternative. The label itself remains red. */
+.recommend{
+  background:var(--surface) !important;
+  border:1px solid var(--line) !important;
+  border-radius:15px !important;
+}
+.recommend-title{
+  color:var(--accent) !important;
+}
+</style>
+
+
+<style id="frame-v1-8-flat-gear">
+.frame-gear-icon{
+  width:18px;
+  height:18px;
+  display:block;
+  fill:none;
+  stroke:var(--text);
+  stroke-width:1.35;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.icon-btn:hover .frame-gear-icon{
+  stroke:var(--accent);
+}
+.icon-btn:active .frame-gear-icon{
+  stroke:var(--accent);
+}
+</style>
+
+<style>
+/* FRAME Demo 0.1 — real iPhone camera layer */
+.real-camera{position:relative;overflow:hidden;background:#050505}
+.real-camera video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.real-camera .camera-label,.real-camera .camera-status,.real-camera .camera-bottom{position:absolute;z-index:2}
+.real-camera .camera-label{top:14px;left:16px}
+.real-camera .camera-status{top:14px;right:16px;font-size:9px;letter-spacing:.12em;color:rgba(255,255,255,.78)}
+.real-camera .camera-bottom{bottom:14px;left:16px;right:16px}
+.camera-error{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:28px;text-align:center;background:rgba(5,5,5,.86);color:#F4F1EA;font-size:12px;line-height:1.5}
+.capture-flash{position:absolute;inset:0;z-index:4;background:#fff;opacity:0;pointer-events:none}
+.capture-flash.flash{animation:frameFlash 180ms ease-out}
+@keyframes frameFlash{0%{opacity:.9}100%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="home" class="screen active">
+  <div class="top"><div class="brand">FRAME</div><button class="icon-btn" aria-label="Settings" onclick="show('settings')"><svg class="frame-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M9.7 3.2h4.6l.5 2.1c.5.2 1 .4 1.4.8l2-.8 2.3 4-1.6 1.4c.1.5.1 1 .1 1.5l1.6 1.4-2.3 4-2-.8c-.4.3-.9.6-1.4.8l-.5 2.1H9.7l-.5-2.1c-.5-.2-1-.4-1.4-.8l-2 .8-2.3-4 1.6-1.4c-.1-.5-.1-1-.1-1.5L3.5 9.3l2.3-4 2 .8c.4-.3.9-.6 1.4-.8l.5-2.1Z"></path>
+  <circle cx="12" cy="12" r="3.1"></circle>
+</svg></button></div>
+  <div class="hero">
+    <div class="kicker">READY TO SHOOT</div>
+    <h1>See the shot.<br>Know how to shoot it.</h1>
+    <p>FRAME gives you a fast, considered starting point before you press the shutter.</p>
+    <div class="profile-chip" aria-label="Active shoot profile">
+      <span class="dot"></span>
+      <span>
+        <strong id="activeProfileName">Portrait</strong><br>
+        <span class="profile-meta">50mm · Handheld</span><br>
+        <span class="profile-meta">Cinematic · Subject Focused</span>
+      </span>
+    </div>
+    <div class="stack">
+      <button class="primary" onclick="show('analyze')">ANALYZE SCENE</button>
+      <button class="secondary" onclick="show('profiles')">CHANGE PROFILE</button>
+    </div>
+    <div class="note">Recommended starting point — you stay in control.</div>
+  </div>
+  <div class="footer-mark">FRAME</div>
+</section>
+
+<section id="profiles" class="screen">
+  <div class="top"><button class="back" onclick="show('home')">← Back</button><button class="icon-btn" aria-label="Settings" onclick="show('settings')"><svg class="frame-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M9.7 3.2h4.6l.5 2.1c.5.2 1 .4 1.4.8l2-.8 2.3 4-1.6 1.4c.1.5.1 1 .1 1.5l1.6 1.4-2.3 4-2-.8c-.4.3-.9.6-1.4.8l-.5 2.1H9.7l-.5-2.1c-.5-.2-1-.4-1.4-.8l-2 .8-2.3-4 1.6-1.4c-.1-.5-.1-1-.1-1.5L3.5 9.3l2.3-4 2 .8c.4-.3.9-.6 1.4-.8l.5-2.1Z"></path>
+  <circle cx="12" cy="12" r="3.1"></circle>
+</svg></button></div>
+  <h1>How do you<br>want to shoot?</h1>
+  <p>Your profile tells FRAME how you work. It can be changed at any time.</p>
+  <div class="cards" style="margin-top:26px">
+    <div class="profile-card active" data-profile="Portrait" onclick="selectProfile(this,'Portrait')"><div><h3>Portrait</h3><p>Subject-focused · Cinematic · Handheld</p></div><div class="chev">✓</div></div>
+    <div class="profile-card" data-profile="Street" onclick="selectProfile(this,'Street')"><div><h3>Street</h3><p>Environmental · Responsive · High sharpness</p></div><div class="chev">→</div></div>
+    <div class="profile-card" data-profile="Wildlife" onclick="selectProfile(this,'Wildlife')"><div><h3>Wildlife</h3><p>Fast subjects · Long lenses · Sharpness first</p></div><div class="chev">→</div></div>
+    <div class="profile-card" data-profile="Landscape" onclick="selectProfile(this,'Landscape')"><div><h3>Landscape</h3><p>Depth · Detail · Tripod when useful</p></div><div class="chev">→</div></div>
+    <button class="secondary" style="margin-top:4px" onclick="alert('Create Profile is planned for the next build.')">＋ CREATE NEW PROFILE</button>
+  </div>
+</section>
+
+<section id="analyze" class="screen">
+  <div class="top"><button class="back" onclick="show('home')">← Back</button><div class="kicker">ANALYZE</div></div>
+  <h1>Frame the shot.</h1>
+  <p style="margin-bottom:18px">Use your iPhone to give FRAME a view of the scene.</p>
+  <div class="camera real-camera" id="cameraBox">
+    <video id="cameraPreview" autoplay playsinline muted></video>
+    <canvas id="captureCanvas" hidden></canvas>
+    <div class="camera-label">FRAME · <span id="cameraProfile">PORTRAIT</span></div>
+    <div class="camera-status" id="cameraStatus">CAMERA READY</div>
+    <div class="camera-bottom"><span>50MM</span><span id="cameraState">LIVE</span></div>
+  </div>
+  <div style="margin-top:14px"><button class="primary" onclick="analyze()">CAPTURE &amp; ANALYZE</button></div>
+</section>
+
+<section id="loading" class="screen">
+  <div class="loading" style="margin-top:65px">
+    
+    <div class="kicker">ANALYZING SCENE</div>
+    <p style="font-size:11px">Light · Motion · Depth · Intent</p>
+  </div>
+</section>
+
+<section id="shoot" class="screen">
+  <div class="top"><button class="back" onclick="show('analyze')">← Reframe</button><div class="kicker">RECOMMENDATION</div></div>
+  <div class="kicker">PRIMARY</div>
+  <h1 style="font-size:32px;margin-top:5px">FREEZE</h1>
+  <p>Protect subject sharpness while keeping the scene controlled.</p>
+  <div class="recommend">
+    <div class="recommend-top"><div class="recommend-title">Recommended starting point</div><div class="conf">HIGH CONFIDENCE</div></div>
+    <div class="settings-grid" style="margin:0">
+      <div class="setting"><div class="label">Lens</div><div class="value">50mm</div><div class="sub">RF 50mm f/1.2</div></div>
+      <div class="setting"><div class="label">Aperture</div><div class="value">f/4</div><div class="sub">environmental depth</div></div>
+      <div class="setting"><div class="label">Shutter</div><div class="value">1/1000</div><div class="sub">freeze movement</div></div>
+      <div class="setting"><div class="label">ISO</div><div class="value">400</div><div class="sub">sharpness priority</div></div>
+      <div class="setting"><div class="label">White Balance</div><div class="value">5200K</div><div class="sub">daylight</div></div>
+      <div class="setting"><div class="label">Exposure</div><div class="value">−0.3</div><div class="sub">protect highlights</div></div>
+    </div>
+    <div class="why"><strong>WHY</strong> — High shutter speed protects sharpness. f/4 keeps more of the environment readable. ISO is allowed to rise when needed to support the shutter speed.</div>
+  </div>
+
+  <div class="alt">
+    <div class="alt-head"><div class="alt-title">CREATIVE ALTERNATIVE</div><div class="kicker">MOTION</div></div>
+    <p>50mm · f/8 · 1/15 · ISO 100</p>
+    <p>Introduce controlled movement and a more expressive sense of time.</p>
+  </div>
+
+  <div class="small-actions">
+    <button class="secondary" onclick="show('adjust')">ADJUST</button>
+    <button class="primary" onclick="show('done')">SHOOT</button>
+  </div>
+</section>
+
+<section id="adjust" class="screen">
+  <div class="top"><button class="back" onclick="show('shoot')">← Back</button><div class="kicker">ADJUST</div></div>
+  <h1>Make it yours.</h1>
+  <p>FRAME starts the decision. You make the final call.</p>
+  <div class="settings-section">
+    <div class="settings-row"><strong>More depth</strong><span>f/5.6 → ISO 800</span></div>
+    <div class="settings-row"><strong>More motion</strong><span>1/500 → ISO 200</span></div>
+    <div class="settings-row"><strong>Lower ISO</strong><span>1/500 → ISO 200</span></div>
+    <div class="settings-row"><strong>Brighter frame</strong><span>Exposure +0.3</span></div>
+  </div>
+  <button class="primary" style="margin-top:26px" onclick="show('shoot')">USE ADJUSTMENT</button>
+</section>
+
+<section id="done" class="screen">
+  <div class="top"><div class="brand">FRAME</div><button class="back" onclick="show('home')" aria-label="Back to start">DONE</button></div>
+  <div class="hero" style="padding-top:60px;text-align:center">
+    
+    <h1>Now shoot.</h1>
+    <p>FRAME steps out of the way.</p>
+    <button class="primary" style="margin-top:30px" onclick="show('home')">NEW SCENE</button>
+  </div>
+</section>
+
+
+<section id="gear" class="screen">
+  <div class="top"><button class="back" onclick="show('settings')">← Back</button><div class="kicker">GEAR</div></div>
+  <h1>Your gear.</h1>
+  <p>Verified gear helps FRAME make technically accurate recommendations.</p>
+
+  <div class="settings-section">
+    <div class="kicker" style="margin-bottom:8px">CAMERA</div>
+    <div class="profile-card active" onclick="show('camera')">
+      <div><h3>Canon EOS R5</h3><p>Full Frame · 45 MP · IBIS</p></div><div class="chev">→</div>
+    </div>
+
+    <div class="kicker" style="margin:20px 0 8px">LENSES</div>
+    <div class="profile-card active" onclick="show('lens')">
+      <div><h3>RF 50mm F1.2 L USM</h3><p>50mm · f/1.2–f/16</p></div><div class="chev">→</div>
+    </div>
+    <button class="secondary" style="margin-top:8px" onclick="show('lens')">＋ ADD LENS</button>
+  </div>
+  <div class="note" style="margin-top:24px">FRAME only uses verified gear specifications.</div>
+</section>
+
+<section id="camera" class="screen">
+  <div class="top"><button class="back" onclick="show('gear')">← Back</button><div class="kicker">ADD CAMERA</div></div>
+  <h1>Identify your<br>camera.</h1>
+  <p>Search for the exact model. FRAME will use verified specifications.</p>
+
+  <div class="setting" style="margin-top:24px">
+    <div class="label">CAMERA MODEL</div>
+    <input id="cameraSearch" value="" placeholder="e.g. Canon EOS R5" style="width:100%;border:0;outline:0;background:transparent;color:var(--text);font-size:17px;padding:4px 0">
+  </div>
+
+  <div class="profile-card active" style="margin-top:10px" onclick="confirmCamera()" aria-label="Verified camera match">
+    <div><h3>Canon EOS R5</h3><p>Full Frame · 45 MP · IBIS</p></div><div class="chev">✓</div>
+  </div>
+  <div class="note">Verified match · Example result</div>
+
+  <button class="primary" style="margin-top:24px" onclick="confirmCamera()">CONFIRM CAMERA</button>
+</section>
+
+<section id="lens" class="screen">
+  <div class="top"><button class="back" onclick="show('gear')">← Back</button><div class="kicker">ADD LENS</div></div>
+  <h1>Identify your<br>lens.</h1>
+  <p>Search for the exact model. FRAME will use verified specifications.</p>
+
+  <div class="setting" style="margin-top:24px">
+    <div class="label">LENS MODEL</div>
+    <input id="lensSearch" value="" placeholder="e.g. RF 50mm F1.2 L USM" style="width:100%;border:0;outline:0;background:transparent;color:var(--text);font-size:17px;padding:4px 0">
+  </div>
+
+  <div class="profile-card active" style="margin-top:10px" onclick="confirmLens()" aria-label="Verified lens match">
+    <div><h3>Canon RF 50mm F1.2 L USM</h3><p>50mm · f/1.2–f/16 · RF Mount</p></div><div class="chev">✓</div>
+  </div>
+  <div class="note">Verified match · Example result</div>
+
+  <button class="primary" style="margin-top:24px" onclick="confirmLens()">CONFIRM LENS</button>
+</section>
+
+<section id="settings" class="screen">
+  <div class="top"><button class="back" onclick="show('home')">← Back</button><div class="kicker">SETTINGS</div></div>
+  <h1>Settings</h1>
+  <div class="settings-section">
+    <div class="settings-row"><strong>Appearance</strong>
+      <div class="segment appearance-segment" id="appearanceSegment">
+        <button id="darkBtn" onclick="setTheme('dark')">Dark</button>
+        <button id="lightBtn" onclick="setTheme('light')">Light</button>
+        <button id="autoBtn" onclick="setTheme('auto')">Auto</button>
+      </div>
+    </div>
+    <div class="settings-row"><strong>Haptics</strong>
+      <div class="segment">
+        <button id="hapticsOn" onclick="setHaptics(true)">ON</button>
+        <button id="hapticsOff" onclick="setHaptics(false)">OFF</button>
+      </div>
+    </div>
+    <div class="settings-row" onclick="show('gear')" style="cursor:pointer"><strong>Gear</strong><span>Canon R5 · RF 50mm</span></div>
+    
+  </div>
+  <div class="note" style="margin-top:28px">FRAME recommends. The photographer decides.</div>
+</section>
+
+
+
+</div>
+<script>
+let currentTheme='dark';
+
+let cameraStream = null;
+let capturedImage = null;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id === 'analyze') startCamera();
+  else stopCamera();
+}
+
+async function startCamera(){
+  const video=document.getElementById('cameraPreview');
+  const status=document.getElementById('cameraStatus');
+  if(!video || cameraStream) return;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    showCameraError('Camera access is not available in this browser.');
+    return;
+  }
+  try{
+    cameraStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},
+      audio:false
+    });
+    video.srcObject=cameraStream;
+    status.textContent='LIVE';
+    document.getElementById('cameraState').textContent='LIVE';
+  }catch(err){
+    console.warn(err);
+    showCameraError('FRAME needs camera access to analyze the scene. Allow camera access in Safari and try again.');
+  }
+}
+
+function stopCamera(){
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+  const video=document.getElementById('cameraPreview');
+  if(video) video.srcObject=null;
+}
+
+function showCameraError(message){
+  const box=document.getElementById('cameraBox');
+  if(!box || box.querySelector('.camera-error')) return;
+  const e=document.createElement('div');
+  e.className='camera-error';
+  e.textContent=message;
+  box.appendChild(e);
+  document.getElementById('cameraState').textContent='NO CAMERA';
+}
+
+function captureFrame(){
+  const video=document.getElementById('cameraPreview');
+  const canvas=document.getElementById('captureCanvas');
+  if(!video || !cameraStream || video.readyState < 2) return false;
+  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+  capturedImage=canvas.toDataURL('image/jpeg',0.9);
+  const flash=document.createElement('div');
+  flash.className='capture-flash';
+  document.getElementById('cameraBox').appendChild(flash);
+  requestAnimationFrame(()=>flash.classList.add('flash'));
+  setTimeout(()=>flash.remove(),220);
+  return true;
+}
+
+function analyze(){
+  if(!captureFrame()){
+    showCameraError('FRAME could not capture the camera image. Make sure the camera is ready and try again.');
+    return;
+  }
+  stopCamera();
+  show('loading');
+  setTimeout(()=>show('shoot'),1700);
+}
+function selectProfile(el,name){
+  document.querySelectorAll('.profile-card').forEach(c=>{
+    c.classList.remove('active');
+    c.querySelector('.chev').textContent='→';
+  });
+  el.classList.add('active');
+  el.querySelector('.chev').textContent='✓';
+  document.getElementById('activeProfileName').textContent=name;
+  document.getElementById('cameraProfile').textContent=name.toUpperCase();
+  localStorage.setItem('frameProfile', name);
+  setTimeout(() => show('home'), 300);
+}
+
+function confirmCamera(){
+  // Prototype: the visible verified result is the selected model.
+  show('gear');
+}
+function confirmLens(){
+  // Prototype: the visible verified result is the selected model.
+  show('gear');
+}
+
+
+let hapticsEnabled = true;
+function setHaptics(enabled){
+  hapticsEnabled = enabled;
+  localStorage.setItem('frameHaptics_v12', enabled ? 'on' : 'off');
+
+  const on = document.getElementById('hapticsOn');
+  const off = document.getElementById('hapticsOff');
+
+  on.classList.remove('selected');
+  off.classList.remove('selected');
+
+  if(enabled){
+    on.classList.add('selected');
+  }else{
+    off.classList.add('selected');
+  }
+
+  // Prototype only: a future native iOS build will connect this to real haptics.
+}
+
+function setTheme(mode){
+  currentTheme=mode;
+  localStorage.setItem('frameTheme', mode);
+  if(mode==='light') document.body.classList.add('light');
+  else if(mode==='dark') document.body.classList.remove('light');
+  else {
+    const prefersLight=window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    document.body.classList.toggle('light',prefersLight);
+  }
+  ['dark','light','auto'].forEach(x=>document.getElementById(x+'Btn').classList.toggle('selected',x===mode));
+}
+
+function loadSavedSettings(){
+  const savedTheme = localStorage.getItem('frameTheme') || 'light';
+  const savedHaptics = localStorage.getItem('frameHaptics_v12');
+  const savedProfile = localStorage.getItem('frameProfile') || 'Portrait';
+
+  setTheme(savedTheme);
+  setHaptics(savedHaptics === null ? true : savedHaptics === 'on');
+
+  document.querySelectorAll('.profile-card[data-profile]').forEach(card=>{
+    const isActive = card.dataset.profile === savedProfile;
+    card.classList.toggle('active', isActive);
+    const chev = card.querySelector('.chev');
+    if(chev) chev.textContent = isActive ? '✓' : '→';
+  });
+
+  document.getElementById('activeProfileName').textContent = savedProfile;
+  document.getElementById('cameraProfile').textContent = savedProfile.toUpperCase();
+}
+
+loadSavedSettings();
+</script>
+
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
+}
+</script>
+</body>
+</html>
