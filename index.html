@@ -215,6 +215,9 @@ input::placeholder{color:var(--faint)}
   font-weight: 400;
 }
 
+
+.ai-scene-status{font-size:12px;color:var(--text);margin-top:2px;line-height:1.4}
+.ai-scene-control{padding-bottom:2px}
 </style>
 
 <style id="frame-v1-design">
@@ -440,21 +443,10 @@ button:active, .profile-card:active {
     <video id="cameraPreview" autoplay playsinline muted></video>
     <canvas id="captureCanvas" hidden></canvas>
     <div class="camera-label">FRAME · <span id="cameraProfile">PORTRAIT</span></div>
-<div class="demo-scene-control">
-  <div class="demo-scene-kicker">DEMO SCENE</div>
-  <select id="demoScene" aria-label="Demo scene">
-    <option value="golden_portrait">Golden Hour Portrait</option>
-    <option value="midday_portrait">Hard Midday Portrait</option>
-    <option value="window_portrait">Window Portrait</option>
-    <option value="lowlight_portrait">Low Light Portrait</option>
-    <option value="after_sunset">After Sunset Portrait</option>
-    <option value="city_portrait">Environmental City Portrait</option>
-    <option value="moving_street">Moving Street Subject</option>
-    <option value="bird_flight">Bird in Flight</option>
-    <option value="landscape_golden">Landscape Golden Hour</option>
-    <option value="night_street">Night Street</option>
-  </select>
-  <div class="demo-scene-note">Used only for the demo engine — no AI yet.</div>
+<div class="demo-scene-control ai-scene-control">
+  <div class="demo-scene-kicker">AI SCENE UNDERSTANDING</div>
+  <div class="ai-scene-status" id="aiSceneStatus">FRAME will read the scene from the captured image.</div>
+  <div class="demo-scene-note">No manual scene selection in the shooting flow.</div>
 </div>
 
     <div class="camera-status" id="cameraStatus">CAMERA READY</div>
@@ -467,7 +459,7 @@ button:active, .profile-card:active {
   <div class="loading" style="margin-top:65px">
     
     <div class="kicker">ANALYZING SCENE</div>
-    <p style="font-size:11px">Light · Motion · Depth · Intent</p>
+    <p style="font-size:11px">Subject · Light · Motion · Depth · Intent</p>
   </div>
 </section>
 
@@ -753,14 +745,113 @@ function captureFrame(){
   return true;
 }
 
-function analyze(){
+async function analyze(){
   if(!captureFrame()) return;
   stopCamera();
   show('loading');
-  setTimeout(()=>{
+  setAIStatus('READING THE SCENE');
+  try{
+    const result = await analyzeSceneWithAI();
+    window.frameAIScene = result.scene;
+    applyAIRecommendation(result.scene);
+    show('shoot');
+  }catch(error){
+    console.error(error);
+    setAIStatus('AI UNAVAILABLE');
     applyEngineRecommendation();
     show('shoot');
-  },1700);
+  }
+}
+
+function setAIStatus(text){
+  const el=document.getElementById('aiSceneStatus');
+  if(el) el.textContent=text;
+}
+
+async function analyzeSceneWithAI(){
+  const FRAME_API_URL='https://frame-api-khaki.vercel.app/api/analyze';
+  const response=await fetch(FRAME_API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      image:capturedImage,
+      profile:currentProfile(),
+      gear:`${FRAME_GEAR.camera} · ${FRAME_GEAR.lens}`
+    })
+  });
+  const data=await response.json();
+  if(!response.ok) throw new Error(data.error || 'AI analysis failed');
+  return data;
+}
+
+
+function aiRecommendation(scene, profile){
+  const movement = scene.movement;
+  const light = scene.light_level;
+  const depth = scene.depth;
+  let aperture='f/2.8', shutter='1/250', iso='100', wb='5200K', ev='−0.3 EV', title='BALANCE';
+
+  // Deterministic FRAME rules: AI describes the scene; this layer chooses settings.
+  if(movement==='Very High'){ shutter='1/1600'; title='FREEZE'; }
+  else if(movement==='High'){ shutter='1/1000'; title='FREEZE'; }
+  else if(movement==='Medium'){ shutter='1/500'; }
+  else if(movement==='Low'){ shutter='1/200'; }
+  else { shutter='1/80'; }
+
+  if(depth==='Shallow') aperture='f/1.2';
+  else if(depth==='Deep') aperture=profile==='Landscape' ? 'f/8' : 'f/5.6';
+  else aperture=profile==='Street' ? 'f/3.2' : 'f/2.8';
+
+  if(light==='Very Low'){ iso = movement==='None' ? '800' : movement==='Low' ? '1600' : '3200'; title='PROTECT'; }
+  else if(light==='Low'){ iso = movement==='None' ? '400' : movement==='Low' ? '800' : '1600'; }
+  else if(light==='Medium'){ iso = movement==='None' ? '100' : movement==='Low' ? '200' : movement==='Medium' ? '400' : '640'; }
+  else if(light==='High' || light==='Very High'){ iso='100'; }
+
+  if(scene.color_temperature==='Warm') wb='5600K';
+  else if(scene.color_temperature==='Cool') wb='4000K';
+  else if(scene.color_temperature==='Mixed') wb='AUTO';
+
+  if(depth==='Shallow'){ title='ISOLATE'; }
+  if(depth==='Deep'){ title='HOLD DETAIL'; }
+  if(movement==='High' || movement==='Very High') title='FREEZE';
+  if(light==='Very Low') title='PROTECT';
+
+  const why = movement==='High' || movement==='Very High'
+    ? 'Movement is the dominant constraint, so shutter speed leads the decision.'
+    : depth==='Shallow'
+      ? 'Depth of field is central to the visual intent, so aperture leads the decision.'
+      : light==='Very Low'
+        ? 'Low light requires a balance between shutter speed, aperture and ISO.'
+        : 'FRAME balances what it sees with your profile preferences and verified gear.';
+
+  const creative={
+    lens:'50mm',
+    aperture: depth==='Shallow' ? 'f/2.0' : (aperture==='f/8' ? 'f/5.6' : aperture),
+    shutter: movement==='Very High' ? '1/1000' : movement==='High' ? '1/500' : shutter,
+    iso: movement==='High' || movement==='Very High' ? (iso==='100'?'400':iso) : iso,
+    wb, ev
+  };
+
+  return {lens:'50mm',aperture,shutter,iso,wb,ev,title,why,creative};
+}
+
+function applyAIRecommendation(scene){
+  const profile=currentProfile();
+  const values=aiRecommendation(scene,profile);
+  window.frameDemoRecommendation={source:'AI',scene,profile,values,creative:values.creative};
+  document.getElementById('recLens').textContent=values.lens;
+  document.getElementById('recAperture').textContent=values.aperture;
+  document.getElementById('recShutter').textContent=values.shutter;
+  document.getElementById('recISO').textContent=values.iso;
+  document.getElementById('recWB').textContent=values.wb;
+  document.getElementById('recEV').textContent=values.ev.replace(' EV','');
+  document.getElementById('recommendationTitle').textContent=values.title;
+  document.getElementById('recommendationSummary').textContent=`${scene.subject} · ${scene.environment} · ${scene.light_level} light · ${scene.movement} movement.`;
+  document.getElementById('recContext').textContent=`${profile.toUpperCase()} · AI SCENE · ${scene.confidence.toUpperCase()} CONFIDENCE`;
+  document.getElementById('recWhy').innerHTML=`<strong>WHY</strong> — ${values.why}`;
+  document.getElementById('altKicker').textContent=(scene.movement==='High'||scene.movement==='Very High')?'MOTION':'LOOK';
+  document.getElementById('altSettings').textContent=`${values.creative.lens} · ${values.creative.aperture} · ${values.creative.shutter} · ISO ${values.creative.iso}`;
+  document.getElementById('altSummary').textContent='A creative alternative that changes depth or motion while staying within your verified setup.';
 }
 
 function loadSavedSettings(){
