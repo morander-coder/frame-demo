@@ -647,6 +647,16 @@ const FRAME_PROFILE_META = {
   Landscape: 'Depth · Detail · Tripod When Useful'
 };
 
+// Photographer preference layer. Higher sharpnessPriority means FRAME is more
+// willing to accept ISO/grain before risking motion blur. This is a preference,
+// not a hard rule, and will later become editable in profile setup.
+const FRAME_PROFILE_PREFS = {
+  Portrait: 0.82,
+  Street: 0.92,
+  Wildlife: 1.00,
+  Landscape: 0.55
+};
+
 function updateHomeSetup(profile){
   const name=document.getElementById('activeProfileName');
   const camera=document.getElementById('activeCameraName');
@@ -787,30 +797,36 @@ function aiRecommendation(scene, profile){
   const movement = scene.movement;
   const light = scene.light_level;
   const depth = scene.depth;
+  const sharpnessPriority = FRAME_PROFILE_PREFS[profile] ?? 0.75;
   let aperture='f/2.8', shutter='1/250', iso='100', wb='5200K', ev='0 EV', title='BALANCE';
 
   // Deterministic FRAME rules: AI describes the scene; this layer chooses settings.
-  // Rule 001: for static/low-movement subjects, use a sensible handheld shutter
-  // before increasing ISO. Do not close the aperture unnecessarily in low light.
+  // The profile preference influences the trade-off between motion blur and ISO.
   if(movement==='Very High'){ shutter='1/1600'; title='FREEZE'; }
   else if(movement==='High'){ shutter='1/1000'; title='FREEZE'; }
   else if(movement==='Medium'){ shutter='1/500'; }
-  else if(movement==='Low'){ shutter='1/100'; }
-  else { shutter='1/80'; }
+  else if(movement==='Low'){
+    // High-sharpness profiles prefer a safer handheld shutter.
+    shutter = sharpnessPriority >= 0.85 ? '1/125' : '1/100';
+  }
+  else {
+    shutter = sharpnessPriority >= 0.80 ? '1/60' : '1/80';
+  }
 
   if(depth==='Shallow') aperture='f/1.2';
   else if(depth==='Deep') aperture=profile==='Landscape' ? 'f/8' : 'f/4';
   else aperture=profile==='Street' ? 'f/3.2' : 'f/2.8';
 
-  // Low-light calibration: for a static/near-static indoor scene, exposure
-  // must remain usable. Open the lens and allow a slower handheld shutter
-  // before settling on a higher ISO. Do not let the generic Deep-depth rule
-  // force f/4 in a scene that is demonstrably very dark.
+  // Low-light calibration: preserve sharpness by opening the lens before
+  // accepting a slower shutter, then accept ISO/grain when needed. This is
+  // preference-driven rather than a fixed "low light = ISO X" rule.
   if((light==='Very Low' || light==='Low') && (movement==='None' || movement==='Low')){
     if(profile==='Portrait'){
-      aperture='f/2.8';
-      shutter='1/60';
-      iso=light==='Very Low' ? '1600' : '800';
+      aperture = sharpnessPriority >= 0.80 ? 'f/2.0' : 'f/2.8';
+      shutter = sharpnessPriority >= 0.80 ? '1/60' : '1/80';
+      iso = light==='Very Low'
+        ? (sharpnessPriority >= 0.80 ? '3200' : '1600')
+        : (sharpnessPriority >= 0.80 ? '1600' : '800');
     } else if(profile==='Landscape'){
       aperture='f/4';
       shutter='1/15';
@@ -838,12 +854,9 @@ function aiRecommendation(scene, profile){
   else if(light==='High' || light==='Very High'){ iso='100'; }
 
   // In genuinely low light, negative exposure compensation is not a default.
-  // Only introduce it later when scene analysis provides actual highlight risk.
   if(light==='Very Low' || light==='Low') ev='0 EV';
 
-  // Avoid false Kelvin precision indoors. Practical/mixed warm sources are
-  // better left to the camera's Auto WB unless the photographer explicitly
-  // chooses a fixed temperature later.
+  // Avoid false Kelvin precision indoors or under mixed practical sources.
   if((scene.environment==='Indoor' || scene.environment==='indoor') && (light==='Low' || light==='Very Low')) wb='AUTO';
   else if(scene.color_temperature==='Mixed') wb='AUTO';
   else if(scene.color_temperature==='Warm') wb='AUTO';
@@ -857,25 +870,31 @@ function aiRecommendation(scene, profile){
   const why = movement==='High' || movement==='Very High'
     ? 'Movement is the dominant constraint, so shutter speed leads the decision.'
     : (light==='Low' || light==='Very Low') && (movement==='Low' || movement==='None')
-      ? 'Low light with limited movement favors a slower handheld shutter and a wider aperture before pushing ISO.'
+      ? (sharpnessPriority >= 0.80
+        ? 'Low light favors a safe handheld shutter, a wider aperture and accepting ISO before risking motion blur.'
+        : 'Low light favors balancing handheld shutter speed, aperture and ISO.')
       : depth==='Shallow'
         ? 'Depth of field is central to the visual intent, so aperture leads the decision.'
         : light==='Very Low'
           ? 'Low light requires a balance between shutter speed, aperture and ISO.'
           : 'FRAME balances what it sees with your profile preferences and verified gear.';
 
-  // Creative Alternative: deliberately change the visual approach while
-  // keeping exposure in a sensible range. In low light, opening the aperture
-  // is the creative move, which also allows ISO to come down rather than up.
+  // Creative Alternative deliberately changes the visual trade-off while
+  // staying inside verified gear. For low-light Portrait, the alternative
+  // trades depth for lower ISO without slowing the shutter.
   const creative={
     lens:'50mm',
-    aperture: (light==='Low' || light==='Very Low') && depth!=='Shallow' ? 'f/2.0'
+    aperture: (light==='Low' || light==='Very Low') && profile==='Portrait'
+      ? (aperture==='f/2.0' ? 'f/1.2' : 'f/2.0')
+      : (light==='Low' || light==='Very Low') && depth!=='Shallow' ? 'f/2.0'
       : depth==='Shallow' ? 'f/2.0'
       : aperture==='f/8' ? 'f/5.6' : aperture,
     shutter: movement==='Very High' ? '1/1000' : movement==='High' ? '1/500' : shutter,
-    iso: (light==='Low' || light==='Very Low') && depth!=='Shallow'
-      ? (profile==='Portrait' ? (light==='Very Low' ? '800' : '400') : Math.max(100, Math.round(Number(iso)/2)))
-      : movement==='High' || movement==='Very High' ? (iso==='100'?'400':iso) : iso,
+    iso: (light==='Low' || light==='Very Low') && profile==='Portrait'
+      ? (aperture==='f/2.0' ? (light==='Very Low' ? '1600' : '800') : (light==='Very Low' ? '800' : '400'))
+      : (light==='Low' || light==='Very Low') && depth!=='Shallow'
+        ? Math.max(100, Math.round(Number(iso)/2))
+        : movement==='High' || movement==='Very High' ? (iso==='100'?'400':iso) : iso,
     wb, ev
   };
 
