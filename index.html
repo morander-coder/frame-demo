@@ -774,9 +774,7 @@ async function analyzeSceneWithAI(){
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      image:capturedImage,
-      profile:currentProfile(),
-      gear:`${FRAME_GEAR.camera} · ${FRAME_GEAR.lens}`
+      image:capturedImage
     })
   });
   const data=await response.json();
@@ -868,8 +866,6 @@ function applyAIRecommendation(scene){
   document.getElementById('recEV').textContent=values.ev.replace(' EV','');
   const evSub=document.getElementById('recEVSub');
   if(evSub) evSub.textContent=values.ev==='0 EV' ? 'neutral starting point' : 'protect highlights';
-  const evSub=document.getElementById('recEVSub');
-  if(evSub) evSub.textContent=values.ev==='0 EV' ? 'neutral starting point' : 'protect highlights';
   document.getElementById('recommendationTitle').textContent=values.title;
   document.getElementById('recommendationSummary').textContent=`${scene.subject} · ${scene.environment} · ${scene.light_level} light · ${scene.movement} movement.`;
   document.getElementById('recContext').textContent=`${profile.toUpperCase()} · AI SCENE · ${scene.confidence.toUpperCase()} CONFIDENCE`;
@@ -931,6 +927,8 @@ const FRAME_ENGINE = {
     values:{Portrait:{lens:"200mm",aperture:"f/4",shutter:"1/1600",iso:"800",wb:"5600K",ev:"−0.3 EV"},Street:{lens:"200mm",aperture:"f/5.6",shutter:"1/2000",iso:"1250",wb:"5600K",ev:"−0.3 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/2000",iso:"1600",wb:"5600K",ev:"−0.3 EV"},Landscape:{lens:"200mm",aperture:"f/5.6",shutter:"1/1000",iso:"800",wb:"5600K",ev:"−0.3 EV"}}},
   landscape_golden:{subject:"Landscape",movement:"None",light:"Medium",environment:"Open",depth:"Deep",
     values:{Portrait:{lens:"50mm",aperture:"f/5.6",shutter:"1/250",iso:"100",wb:"5200K",ev:"−0.7 EV"},Street:{lens:"35mm",aperture:"f/5.6",shutter:"1/250",iso:"100",wb:"5200K",ev:"−0.7 EV"},Wildlife:{lens:"200mm",aperture:"f/5.6",shutter:"1/500",iso:"200",wb:"5200K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/8",shutter:"1/80",iso:"100",wb:"5200K",ev:"−0.7 EV"}}},
+  lowlight_interior:{subject:"Interior",movement:"None",light:"Low",environment:"Indoor",depth:"Deep",
+    values:{Portrait:{lens:"50mm",aperture:"f/2.8",shutter:"1/60",iso:"800",wb:"AUTO",ev:"0 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"1600",wb:"AUTO",ev:"0 EV"},Wildlife:{lens:"50mm",aperture:"f/4",shutter:"1/250",iso:"3200",wb:"AUTO",ev:"0 EV"},Landscape:{lens:"50mm",aperture:"f/5.6",shutter:"1/15",iso:"400",wb:"AUTO",ev:"0 EV"}}},
   night_street:{subject:"Street",movement:"Medium",light:"Very Low",environment:"Urban",depth:"Medium",
     values:{Portrait:{lens:"50mm",aperture:"f/1.8",shutter:"1/125",iso:"1600",wb:"3200K",ev:"−0.7 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"3200",wb:"3200K",ev:"−0.7 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/500",iso:"6400",wb:"3200K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/2.8",shutter:"1/15",iso:"1600",wb:"3200K",ev:"−0.7 EV"}}}
 };
@@ -941,7 +939,7 @@ function currentScene(){ return document.getElementById('demoScene')?.value || '
 const SCENE_LABELS={
   golden_portrait:'Golden Hour Portrait', midday_portrait:'Hard Midday Portrait', window_portrait:'Window Portrait',
   lowlight_portrait:'Low Light Portrait', after_sunset:'After Sunset Portrait', city_portrait:'Environmental City Portrait',
-  moving_street:'Moving Street Subject', bird_flight:'Bird in Flight', landscape_golden:'Landscape Golden Hour', night_street:'Night Street'
+  moving_street:'Moving Street Subject', bird_flight:'Bird in Flight', landscape_golden:'Landscape Golden Hour', night_street:'Night Street', lowlight_interior:'Low Light Interior'
 };
 
 function creativeAlternative(values,scene){
@@ -963,12 +961,15 @@ function creativeAlternative(values,scene){
   return alt;
 }
 
-function applyEngineRecommendation(){
+function applyEngineRecommendation(source='FALLBACK'){
   const sceneKey=currentScene();
   const scene=FRAME_ENGINE[sceneKey] || FRAME_ENGINE.golden_portrait;
   const profile=currentProfile();
-  const values=scene.values[profile] || scene.values.Portrait;
-  const creative=creativeAlternative(values,scene);
+  const rawValues=scene.values[profile] || scene.values.Portrait;
+  // Hard gear boundary: this demo has only a verified 50mm lens. Never recommend unavailable focal lengths.
+  const values={...rawValues,lens:FRAME_GEAR.lens.includes('50mm')?'50mm':rawValues.lens};
+  const rawCreative=creativeAlternative(rawValues,scene);
+  const creative={...rawCreative,lens:FRAME_GEAR.lens.includes('50mm')?'50mm':rawCreative.lens};
 
   window.frameDemoRecommendation={sceneKey,scene,profile,values,creative};
 
@@ -1022,7 +1023,7 @@ function applyEngineRecommendation(){
     ? 'A more expressive option that allows controlled movement instead of freezing everything.'
     : 'A creative alternative that changes depth, motion or visual character while staying within your gear.';
 
-  if(context) context.textContent=`${profile.toUpperCase()} · ${SCENE_LABELS[sceneKey] || sceneKey}`;
+  if(context) context.textContent=`${profile.toUpperCase()} · ${source==='AI' ? 'AI SCENE' : 'FALLBACK · '+(SCENE_LABELS[sceneKey] || sceneKey)}`;
 }
 
 window.addEventListener('load',()=>{
