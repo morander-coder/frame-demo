@@ -53,6 +53,13 @@ h2{font-size:23px;letter-spacing:-.025em;margin:0 0 8px}
 p{color:var(--muted);line-height:1.42;margin:0}
 .hero{padding-top:22px}
 .profile-chip{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--surface);width:100%;padding:13px 15px;border-radius:14px;margin:22px 0 18px;cursor:default}
+.setup-chip{align-items:flex-start;text-align:left}
+.setup-content{display:flex;flex-direction:column;min-width:0;gap:2px}
+.setup-kicker{font-size:9px;letter-spacing:.14em;color:var(--muted);margin-bottom:3px}
+.setup-content strong{font-size:15px;line-height:1.2}
+.setup-gear{font-size:12px;line-height:1.25;color:var(--text)}
+.setup-gear + .setup-gear{margin-top:-1px}
+.setup-chip .profile-meta{font-size:10px;line-height:1.25;margin-top:3px}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .profile-chip span{font-size:12px}
 .profile-meta{font-size:11px;color:var(--muted);line-height:1.65}
@@ -358,6 +365,25 @@ button:active, .profile-card:active {
 }
 </style>
 
+
+<style id="engine-test-lab">
+.engine-test-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.test-select{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px}
+.test-select select{width:100%;border:0;background:transparent;color:var(--text);font-size:13px;outline:0;margin-top:5px}
+.test-result{margin-top:12px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:14px}
+.test-result-head{display:flex;justify-content:space-between;align-items:center;font-size:9px;letter-spacing:.14em;color:var(--muted)}
+#testVerdict{color:var(--accent);font-weight:700}
+.test-title{font-size:22px;font-weight:650;margin-top:10px}
+.test-settings{font-size:13px;margin-top:7px;line-height:1.5}
+.test-meta{font-size:10px;color:var(--muted);margin-top:7px;line-height:1.45}
+.test-summary{font-size:9px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5}
+.engine-report{position:fixed;inset:0;background:var(--bg);z-index:50;padding:24px 18px;overflow:hidden}
+.engine-report h2{margin:0;font-size:24px}.report-grid{margin-top:12px;display:grid;grid-template-columns:74px repeat(4,1fr);gap:4px;font-size:8px}
+.report-grid div{min-height:31px;border:1px solid var(--line);border-radius:6px;padding:4px;display:flex;align-items:center;justify-content:center;text-align:center}
+.report-grid .head{font-weight:700;color:var(--muted);min-height:24px}.report-grid .scene-name{justify-content:flex-start;text-align:left;color:var(--muted)}
+.report-pass{border-color:rgba(63,143,104,.55)!important}.report-warn{border-color:var(--accent)!important;color:var(--accent)}
+.report-note{font-size:9px;color:var(--muted);margin-top:10px;line-height:1.45}.report-close{position:absolute;right:18px;top:20px}
+</style>
 </head>
 <body>
 <div class="app">
@@ -371,12 +397,14 @@ button:active, .profile-card:active {
     <div class="kicker">READY TO SHOOT</div>
     <h1>See the shot.<br>Know how to shoot it.</h1>
     <p>FRAME gives you a fast, considered starting point before you press the shutter.</p>
-    <div class="profile-chip" aria-label="Active shoot profile">
+    <div class="profile-chip setup-chip" aria-label="Current camera and shoot setup">
       <span class="dot"></span>
-      <span>
-        <strong id="activeProfileName">Portrait</strong><br>
-        <span class="profile-meta">50mm · Handheld</span><br>
-        <span class="profile-meta">Cinematic · Subject Focused</span>
+      <span class="setup-content">
+        <span class="setup-kicker">CURRENT SETUP</span>
+        <strong id="activeProfileName">Portrait</strong>
+        <span class="setup-gear" id="activeCameraName">Canon EOS R5</span>
+        <span class="setup-gear" id="activeLensName">RF 50mm F1.2 L USM</span>
+        <span class="profile-meta" id="activeProfileMeta">Handheld · Cinematic · Subject Focused</span>
       </span>
     </div>
     <div class="stack">
@@ -446,25 +474,26 @@ button:active, .profile-card:active {
 <section id="shoot" class="screen">
   <div class="top"><button class="back" onclick="show('analyze')">← Reframe</button><div class="kicker">RECOMMENDATION</div></div>
   <div class="kicker">PRIMARY</div>
-  <h1 style="font-size:32px;margin-top:5px">FREEZE</h1>
-  <p>Protect subject sharpness while keeping the scene controlled.</p>
+  <h1 id="recommendationTitle" style="font-size:32px;margin-top:5px">FREEZE</h1>
+  <p id="recommendationSummary">Protect subject sharpness while keeping the scene controlled.</p>
+  <div id="recContext" class="kicker" style="margin-top:10px;margin-bottom:16px">PORTRAIT · GOLDEN HOUR PORTRAIT</div>
   <div class="recommend">
     <div class="recommend-top"><div class="recommend-title">Recommended starting point</div><div class="conf">HIGH CONFIDENCE</div></div>
     <div class="settings-grid" style="margin:0">
-      <div class="setting"><div class="label">Lens</div><div class="value">50mm</div><div class="sub">RF 50mm f/1.2</div></div>
-      <div class="setting"><div class="label">Aperture</div><div class="value">f/4</div><div class="sub">environmental depth</div></div>
-      <div class="setting"><div class="label">Shutter</div><div class="value">1/1000</div><div class="sub">freeze movement</div></div>
-      <div class="setting"><div class="label">ISO</div><div class="value">400</div><div class="sub">sharpness priority</div></div>
-      <div class="setting"><div class="label">White Balance</div><div class="value">5200K</div><div class="sub">daylight</div></div>
-      <div class="setting"><div class="label">Exposure</div><div class="value">−0.3</div><div class="sub">protect highlights</div></div>
+      <div class="setting"><div class="label">Lens</div><div class="value" id="recLens">50mm</div><div class="sub">RF 50mm f/1.2</div></div>
+      <div class="setting"><div class="label">Aperture</div><div class="value" id="recAperture">f/4</div><div class="sub">environmental depth</div></div>
+      <div class="setting"><div class="label">Shutter</div><div class="value" id="recShutter">1/1000</div><div class="sub">recommended shutter</div></div>
+      <div class="setting"><div class="label">ISO</div><div class="value" id="recISO">400</div><div class="sub">recommended ISO</div></div>
+      <div class="setting"><div class="label">White Balance</div><div class="value" id="recWB">5200K</div><div class="sub">recommended white balance</div></div>
+      <div class="setting"><div class="label">Exposure</div><div class="value" id="recEV">−0.3</div><div class="sub">protect highlights</div></div>
     </div>
-    <div class="why"><strong>WHY</strong> — High shutter speed protects sharpness. f/4 keeps more of the environment readable. ISO is allowed to rise when needed to support the shutter speed.</div>
+    <div class="why" id="recWhy"><strong>WHY</strong> — FRAME balances motion, depth, light and your profile preferences.</div>
   </div>
 
   <div class="alt">
-    <div class="alt-head"><div class="alt-title">CREATIVE ALTERNATIVE</div><div class="kicker">MOTION</div></div>
-    <p>50mm · f/8 · 1/15 · ISO 100</p>
-    <p>Introduce controlled movement and a more expressive sense of time.</p>
+    <div class="alt-head"><div class="alt-title">CREATIVE ALTERNATIVE</div><div class="kicker" id="altKicker">ALTERNATIVE</div></div>
+    <p id="altSettings">50mm · f/8 · 1/15 · ISO 100</p>
+    <p id="altSummary">A deliberate alternative that changes the visual character of the frame.</p>
   </div>
 
   <div class="small-actions">
@@ -553,6 +582,29 @@ button:active, .profile-card:active {
   <button class="primary" style="margin-top:24px" onclick="confirmLens()">CONFIRM LENS</button>
 </section>
 
+<section id="engineTest" class="screen">
+  <div class="top"><button class="back" onclick="show('settings')">← Back</button><div class="kicker">ENGINE TEST</div></div>
+  <h1>Test the<br>decision.</h1>
+  <p>Check how FRAME responds to scene + profile before AI is added.</p>
+
+  <div class="engine-test-controls">
+    <div class="test-select"><div class="label">SCENE</div><select id="testScene"></select></div>
+    <div class="test-select"><div class="label">PROFILE</div><select id="testProfile">
+      <option>Portrait</option><option>Street</option><option>Wildlife</option><option>Landscape</option>
+    </select></div>
+  </div>
+
+  <div class="test-result" id="testResult">
+    <div class="test-result-head"><span id="testVerdict">READY</span><span id="testAction">—</span></div>
+    <div class="test-title" id="testTitle">—</div>
+    <div class="test-settings" id="testSettings">—</div>
+    <div class="test-meta" id="testMeta">—</div>
+  </div>
+
+  <button class="primary" style="margin-top:14px" onclick="runAllEngineTests()">RUN ALL 40 TESTS</button>
+  <div class="test-summary" id="testSummary">10 scenes · 4 profiles · 40 combinations</div>
+</section>
+
 <section id="settings" class="screen">
   <div class="top"><button class="back" onclick="show('home')">← Back</button><div class="kicker">SETTINGS</div></div>
   <h1>Settings</h1>
@@ -571,7 +623,7 @@ button:active, .profile-card:active {
       </div>
     </div>
     <div class="settings-row" onclick="show('gear')" style="cursor:pointer"><strong>Gear</strong><span>Canon R5 · RF 50mm</span></div>
-    
+    <button class="secondary" style="margin-top:16px" onclick="show('engineTest');initEngineTest()">ENGINE TEST LAB</button>
   </div>
   <div class="note" style="margin-top:28px">FRAME recommends. The photographer decides.</div>
 </section>
@@ -584,20 +636,49 @@ let currentTheme='dark';
 
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const target=document.getElementById(id);
+  if(!target) return;
+  target.classList.add('active');
+  if(id==='analyze') startCamera();
+  else stopCamera();
 }
-function analyze(){ if(!captureFrame()) return; stopCamera(); show('loading'); setTimeout(()=>{applyEngineRecommendation(); show('shoot')},1700); }
+
+const FRAME_GEAR = {
+  camera: 'Canon EOS R5',
+  lens: 'RF 50mm F1.2 L USM'
+};
+
+const FRAME_PROFILE_META = {
+  Portrait: 'Handheld · Cinematic · Subject Focused',
+  Street: 'Environmental · Responsive · High Sharpness',
+  Wildlife: 'Fast Subjects · Long Lenses · Sharpness First',
+  Landscape: 'Depth · Detail · Tripod When Useful'
+};
+
+function updateHomeSetup(profile){
+  const name=document.getElementById('activeProfileName');
+  const camera=document.getElementById('activeCameraName');
+  const lens=document.getElementById('activeLensName');
+  const meta=document.getElementById('activeProfileMeta');
+  if(name) name.textContent=profile;
+  if(camera) camera.textContent=FRAME_GEAR.camera;
+  if(lens) lens.textContent=FRAME_GEAR.lens;
+  if(meta) meta.textContent=FRAME_PROFILE_META[profile] || '';
+}
+
 function selectProfile(el,name){
-  document.querySelectorAll('.profile-card').forEach(c=>{
+  document.querySelectorAll('.profile-card[data-profile]').forEach(c=>{
     c.classList.remove('active');
-    c.querySelector('.chev').textContent='→';
+    const chev=c.querySelector('.chev');
+    if(chev) chev.textContent='→';
   });
   el.classList.add('active');
-  el.querySelector('.chev').textContent='✓';
-  document.getElementById('activeProfileName').textContent=name;
+  const chev=el.querySelector('.chev');
+  if(chev) chev.textContent='✓';
+  updateHomeSetup(name);
   document.getElementById('cameraProfile').textContent=name.toUpperCase();
   localStorage.setItem('frameProfile', name);
-  setTimeout(() => show('home'), 300);
+  setTimeout(()=>show('home'),300);
 }
 
 function confirmCamera(){
@@ -642,6 +723,46 @@ function setTheme(mode){
   ['dark','light','auto'].forEach(x=>document.getElementById(x+'Btn').classList.toggle('selected',x===mode));
 }
 
+let cameraStream=null,capturedImage=null;
+
+async function startCamera(){
+  const v=document.getElementById('cameraPreview');
+  if(!v || cameraStream) return;
+  try{
+    cameraStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},
+      audio:false
+    });
+    v.srcObject=cameraStream;
+  }catch(e){ console.warn('Camera unavailable',e); }
+}
+
+function stopCamera(){
+  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
+  const v=document.getElementById('cameraPreview');
+  if(v) v.srcObject=null;
+}
+
+function captureFrame(){
+  const v=document.getElementById('cameraPreview');
+  const c=document.getElementById('captureCanvas');
+  if(!v || !cameraStream || v.readyState<2) return false;
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+  capturedImage=c.toDataURL('image/jpeg',.9);
+  return true;
+}
+
+function analyze(){
+  if(!captureFrame()) return;
+  stopCamera();
+  show('loading');
+  setTimeout(()=>{
+    applyEngineRecommendation();
+    show('shoot');
+  },1700);
+}
+
 function loadSavedSettings(){
   const savedTheme = localStorage.getItem('frameTheme') || 'light';
   const savedHaptics = localStorage.getItem('frameHaptics_v12');
@@ -657,7 +778,7 @@ function loadSavedSettings(){
     if(chev) chev.textContent = isActive ? '✓' : '→';
   });
 
-  document.getElementById('activeProfileName').textContent = savedProfile;
+  updateHomeSetup(savedProfile);
   document.getElementById('cameraProfile').textContent = savedProfile.toUpperCase();
 }
 
@@ -698,35 +819,94 @@ const FRAME_ENGINE = {
     values:{Portrait:{lens:"50mm",aperture:"f/1.8",shutter:"1/125",iso:"1600",wb:"3200K",ev:"−0.7 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"3200",wb:"3200K",ev:"−0.7 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/500",iso:"6400",wb:"3200K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/2.8",shutter:"1/15",iso:"1600",wb:"3200K",ev:"−0.7 EV"}}}
 };
 
-function currentProfile(){
-  return localStorage.getItem('frameProfile') || 'Portrait';
+function currentProfile(){ return localStorage.getItem('frameProfile') || 'Portrait'; }
+function currentScene(){ return document.getElementById('demoScene')?.value || 'golden_portrait'; }
+
+const SCENE_LABELS={
+  golden_portrait:'Golden Hour Portrait', midday_portrait:'Hard Midday Portrait', window_portrait:'Window Portrait',
+  lowlight_portrait:'Low Light Portrait', after_sunset:'After Sunset Portrait', city_portrait:'Environmental City Portrait',
+  moving_street:'Moving Street Subject', bird_flight:'Bird in Flight', landscape_golden:'Landscape Golden Hour', night_street:'Night Street'
+};
+
+function creativeAlternative(values,scene){
+  if(values.creative) return values.creative;
+  const alt={...values};
+  if(scene.movement==='High' || scene.movement==='Very High'){
+    alt.shutter = scene.movement==='Very High' ? '1/1000' : '1/500';
+    alt.iso = Math.max(100, Math.round(Number(values.iso)/2));
+  } else if(scene.depth==='Shallow'){
+    alt.aperture='f/2.8';
+    alt.shutter=values.shutter;
+  } else if(scene.depth==='Deep'){
+    alt.aperture='f/4';
+    alt.shutter=values.shutter;
+  } else {
+    alt.aperture=values.aperture==='f/1.2' ? 'f/2.0' : values.aperture;
+    alt.shutter=values.shutter;
+  }
+  return alt;
 }
-function currentScene(){
-  return document.getElementById('demoScene')?.value || 'golden_portrait';
-}
+
 function applyEngineRecommendation(){
-  const scene=FRAME_ENGINE[currentScene()];
+  const sceneKey=currentScene();
+  const scene=FRAME_ENGINE[sceneKey] || FRAME_ENGINE.golden_portrait;
   const profile=currentProfile();
   const values=scene.values[profile] || scene.values.Portrait;
-  const creative=values.creative || scene.values.Portrait.creative || values;
-  window.frameDemoRecommendation={...values,creative,scene,profile};
+  const creative=creativeAlternative(values,scene);
 
-  // The existing prototype's recommendation elements vary by version.
-  // Update by label/text where possible.
-  const all=document.querySelectorAll('*');
-  const fields={lens:values.lens,aperture:values.aperture,shutter:values.shutter,iso:values.iso,wb:values.wb,ev:values.ev};
-  all.forEach(el=>{
-    if(el.children.length===0){
-      const t=el.textContent.trim().toLowerCase();
-      if(t==='50mm'||t==='85mm'||t==='200mm'||t==='24mm'||t==='35mm') el.textContent=values.lens;
-      else if(/^f\/[\d.]+$/.test(t)) el.textContent=values.aperture;
-      else if(/^1\/\d+$/.test(t)) el.textContent=values.shutter;
-      else if(/^iso\s*\d+$/i.test(t)) el.textContent='ISO '+values.iso;
-      else if(/^\d{4}k$/.test(t)) el.textContent=values.wb;
-      else if(/^[−-]?\d+\.\d+\s*ev$/i.test(t)) el.textContent=values.ev;
-    }
-  });
+  window.frameDemoRecommendation={sceneKey,scene,profile,values,creative};
+
+  document.getElementById('recLens').textContent=values.lens;
+  document.getElementById('recAperture').textContent=values.aperture;
+  document.getElementById('recShutter').textContent=values.shutter;
+  document.getElementById('recISO').textContent=values.iso;
+  document.getElementById('recWB').textContent=values.wb;
+  document.getElementById('recEV').textContent=values.ev.replace(' EV','');
+
+  const title=document.getElementById('recommendationTitle');
+  const summary=document.getElementById('recommendationSummary');
+  const why=document.getElementById('recWhy');
+  const altKicker=document.getElementById('altKicker');
+  const altSettings=document.getElementById('altSettings');
+  const altSummary=document.getElementById('altSummary');
+  const context=document.getElementById('recContext');
+
+  if(scene.movement==='Very High' || scene.movement==='High'){
+    title.textContent='FREEZE';
+    summary.textContent='Protect subject sharpness and timing by prioritizing shutter speed.';
+  } else if(scene.depth==='Shallow'){
+    title.textContent='ISOLATE';
+    summary.textContent='Use shallow depth to separate the subject and keep the frame intentional.';
+  } else if(scene.depth==='Deep'){
+    title.textContent='HOLD DETAIL';
+    summary.textContent='Preserve depth and detail across the scene without over-prioritizing shutter speed.';
+  } else if(scene.light==='Very Low'){
+    title.textContent='PROTECT';
+    summary.textContent='Protect the exposure while keeping shutter speed within a sensible handheld range.';
+  } else {
+    title.textContent='BALANCE';
+    summary.textContent='Balance depth, motion and available light around your selected profile.';
+  }
+
+  why.innerHTML='<strong>WHY</strong> — '+(
+    scene.movement==='High' || scene.movement==='Very High'
+      ? 'Movement is the dominant constraint, so shutter speed leads the decision.'
+      : scene.depth==='Shallow'
+        ? 'Depth of field is central to the look, so aperture leads the decision.'
+        : scene.light==='Very Low'
+          ? 'Low light requires a balance between shutter speed, aperture and ISO.'
+          : 'FRAME balances the scene requirements with your profile preferences.'
+  );
+
+  altKicker.textContent=(scene.movement==='High'||scene.movement==='Very High')?'MOTION':'LOOK';
+  altSettings.textContent=`${creative.lens} · ${creative.aperture} · ${creative.shutter} · ISO ${creative.iso}`;
+  altSummary.textContent=(scene.movement==='High'||scene.movement==='Very High')
+    ? 'A more expressive option that allows controlled movement instead of freezing everything.'
+    : 'A creative alternative that changes depth, motion or visual character while staying within your gear.';
+
+  if(context) context.textContent=`${profile.toUpperCase()} · ${SCENE_LABELS[sceneKey] || sceneKey}`;
 }
+
 window.addEventListener('load',()=>{
   const s=document.getElementById('demoScene');
   if(s) s.addEventListener('change',applyEngineRecommendation);
@@ -734,13 +914,40 @@ window.addEventListener('load',()=>{
 });
 </script>
 
+
+
 <script>
-let cameraStream=null,capturedImage=null;
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='analyze')startCamera();else stopCamera();}
-async function startCamera(){const v=document.getElementById('cameraPreview');if(!v||cameraStream)return;try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});v.srcObject=cameraStream;}catch(e){console.warn(e)}}
-function stopCamera(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}const v=document.getElementById('cameraPreview');if(v)v.srcObject=null}
-function captureFrame(){const v=document.getElementById('cameraPreview'),c=document.getElementById('captureCanvas');if(!v||!cameraStream||v.readyState<2)return false;c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0,c.width,c.height);capturedImage=c.toDataURL('image/jpeg',.9);return true}
-function analyze(){if(!captureFrame())return;stopCamera();show('loading');setTimeout(()=>{applyEngineRecommendation();show('shoot')},1700)}
+const ENGINE_TEST_PROFILES=['Portrait','Street','Wildlife','Landscape'];
+function initEngineTest(){
+  const ss=document.getElementById('testScene'), ps=document.getElementById('testProfile');
+  if(!ss||!ps) return;
+  if(!ss.options.length){ Object.entries(SCENE_LABELS).forEach(([key,label])=>{const o=document.createElement('option');o.value=key;o.textContent=label;ss.appendChild(o);}); }
+  ss.value=currentScene(); ps.value=currentProfile();
+  updateEngineTest();
+  ss.onchange=updateEngineTest; ps.onchange=updateEngineTest;
+}
+function updateEngineTest(){
+  const sceneKey=document.getElementById('testScene')?.value||'golden_portrait';
+  const profile=document.getElementById('testProfile')?.value||'Portrait';
+  const scene=FRAME_ENGINE[sceneKey]; const values=scene?.values?.[profile];
+  if(!values) return;
+  document.getElementById('testVerdict').textContent='ENGINE OK';
+  document.getElementById('testAction').textContent=scene.movement==='High'||scene.movement==='Very High'?'MOTION LEADS':scene.depth==='Shallow'?'DEPTH LEADS':scene.depth==='Deep'?'DETAIL LEADS':'BALANCE';
+  const title=scene.movement==='Very High'||scene.movement==='High'?'FREEZE':scene.depth==='Shallow'?'ISOLATE':scene.depth==='Deep'?'HOLD DETAIL':scene.light==='Very Low'?'PROTECT':'BALANCE';
+  document.getElementById('testTitle').textContent=title;
+  document.getElementById('testSettings').textContent=`${values.lens} · ${values.aperture} · ${values.shutter} · ISO ${values.iso} · ${values.wb} · ${values.ev}`;
+  document.getElementById('testMeta').textContent=`${profile} · ${SCENE_LABELS[sceneKey]} · ${scene.subject} · Movement ${scene.movement} · Light ${scene.light} · Depth ${scene.depth}`;
+}
+function runAllEngineTests(){
+  const sceneKeys=Object.keys(SCENE_LABELS); const results=[]; let unique=0;
+  sceneKeys.forEach(sceneKey=>{ const seen=new Set(); ENGINE_TEST_PROFILES.forEach(profile=>{ const v=FRAME_ENGINE[sceneKey].values[profile]; const sig=[v.lens,v.aperture,v.shutter,v.iso,v.wb,v.ev].join('|'); if(!seen.has(sig)) unique++; seen.add(sig); results.push({sceneKey,profile,v,sig}); }); });
+  const report=document.createElement('div'); report.className='engine-report';
+  const header=`<button class="secondary report-close" onclick="this.parentElement.remove()">CLOSE</button><div class="kicker">ENGINE TEST LAB</div><h2>40 combinations.</h2><div class="test-summary">${results.length} combinations checked · ${unique} unique scene/profile outputs · green = distinct output within scene</div>`;
+  let grid='<div class="report-grid"><div class="head">SCENE</div>'+ENGINE_TEST_PROFILES.map(p=>`<div class="head">${p.toUpperCase()}</div>`).join('');
+  sceneKeys.forEach(sceneKey=>{ const row=results.filter(r=>r.sceneKey===sceneKey); const sigs=row.map(r=>r.sig); grid+=`<div class="scene-name">${SCENE_LABELS[sceneKey]}</div>`; row.forEach((r,i)=>{ const distinct=sigs.filter((s,j)=>j!==i&&s===r.sig).length===0; grid+=`<div class="${distinct?'report-pass':'report-warn'}">${r.v.aperture}<br>${r.v.shutter}<br>ISO ${r.v.iso}</div>`; }); });
+  grid+='</div><div class="report-note">This is a development test, not an AI result. The goal is to make sure FRAME does not blindly return the same settings for every profile/scene. The correct production engine will later derive scene data first, then solve settings from verified gear + profile.</div>';
+  report.innerHTML=header+grid; document.body.appendChild(report);
+}
 </script>
 
 <script>
