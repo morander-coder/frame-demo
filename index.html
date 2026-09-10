@@ -789,23 +789,36 @@ function aiRecommendation(scene, profile){
   const movement = scene.movement;
   const light = scene.light_level;
   const depth = scene.depth;
-  let aperture='f/2.8', shutter='1/250', iso='100', wb='5200K', ev='−0.3 EV', title='BALANCE';
+  let aperture='f/2.8', shutter='1/250', iso='100', wb='5200K', ev='0 EV', title='BALANCE';
 
   // Deterministic FRAME rules: AI describes the scene; this layer chooses settings.
+  // Rule 001: for static/low-movement subjects, use a sensible handheld shutter
+  // before increasing ISO. Do not close the aperture unnecessarily in low light.
   if(movement==='Very High'){ shutter='1/1600'; title='FREEZE'; }
   else if(movement==='High'){ shutter='1/1000'; title='FREEZE'; }
   else if(movement==='Medium'){ shutter='1/500'; }
-  else if(movement==='Low'){ shutter='1/200'; }
+  else if(movement==='Low'){ shutter='1/100'; }
   else { shutter='1/80'; }
 
   if(depth==='Shallow') aperture='f/1.2';
-  else if(depth==='Deep') aperture=profile==='Landscape' ? 'f/8' : 'f/5.6';
+  else if(depth==='Deep') aperture=profile==='Landscape' ? 'f/8' : 'f/4';
   else aperture=profile==='Street' ? 'f/3.2' : 'f/2.8';
 
-  if(light==='Very Low'){ iso = movement==='None' ? '800' : movement==='Low' ? '1600' : '3200'; title='PROTECT'; }
-  else if(light==='Low'){ iso = movement==='None' ? '400' : movement==='Low' ? '800' : '1600'; }
-  else if(light==='Medium'){ iso = movement==='None' ? '100' : movement==='Low' ? '200' : movement==='Medium' ? '400' : '640'; }
+  if(light==='Very Low'){
+    iso = movement==='None' ? '400' : movement==='Low' ? '800' : '1600';
+    title='PROTECT';
+  }
+  else if(light==='Low'){
+    iso = movement==='None' ? '200' : movement==='Low' ? '400' : '800';
+  }
+  else if(light==='Medium'){
+    iso = movement==='None' ? '100' : movement==='Low' ? '200' : movement==='Medium' ? '400' : '640';
+  }
   else if(light==='High' || light==='Very High'){ iso='100'; }
+
+  // In genuinely low light, negative exposure compensation is not a default.
+  // Only introduce it later when scene analysis provides actual highlight risk.
+  if(light==='Very Low' || light==='Low') ev='0 EV';
 
   if(scene.color_temperature==='Warm') wb='5600K';
   else if(scene.color_temperature==='Cool') wb='4000K';
@@ -818,11 +831,13 @@ function aiRecommendation(scene, profile){
 
   const why = movement==='High' || movement==='Very High'
     ? 'Movement is the dominant constraint, so shutter speed leads the decision.'
-    : depth==='Shallow'
-      ? 'Depth of field is central to the visual intent, so aperture leads the decision.'
-      : light==='Very Low'
-        ? 'Low light requires a balance between shutter speed, aperture and ISO.'
-        : 'FRAME balances what it sees with your profile preferences and verified gear.';
+    : (light==='Low' || light==='Very Low') && (movement==='Low' || movement==='None')
+      ? 'Low light with limited movement favors a slower handheld shutter and a wider aperture before pushing ISO.'
+      : depth==='Shallow'
+        ? 'Depth of field is central to the visual intent, so aperture leads the decision.'
+        : light==='Very Low'
+          ? 'Low light requires a balance between shutter speed, aperture and ISO.'
+          : 'FRAME balances what it sees with your profile preferences and verified gear.';
 
   const creative={
     lens:'50mm',
