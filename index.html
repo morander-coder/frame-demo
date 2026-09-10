@@ -341,19 +341,23 @@ button.feedback-active:active{
 }
 </style>
 
+
 <style>
-/* FRAME Demo 0.1 — real iPhone camera layer */
-.real-camera{position:relative;overflow:hidden;background:#050505}
-.real-camera video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.real-camera .camera-label,.real-camera .camera-status,.real-camera .camera-bottom{position:absolute;z-index:2}
-.real-camera .camera-label{top:14px;left:16px}
-.real-camera .camera-status{top:14px;right:16px;font-size:9px;letter-spacing:.12em;color:rgba(255,255,255,.78)}
-.real-camera .camera-bottom{bottom:14px;left:16px;right:16px}
-.camera-error{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:28px;text-align:center;background:rgba(5,5,5,.86);color:#F4F1EA;font-size:12px;line-height:1.5}
-.capture-flash{position:absolute;inset:0;z-index:4;background:#fff;opacity:0;pointer-events:none}
-.capture-flash.flash{animation:frameFlash 180ms ease-out}
-@keyframes frameFlash{0%{opacity:.9}100%{opacity:0}}
+/* FRAME Demo 0.2 — profile-aware demo engine */
+.demo-scene-control{margin-top:12px;padding:10px 0 0}
+.demo-scene-kicker{font-size:9px;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
+#demoScene{width:100%;box-sizing:border-box;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:11px;outline:none}
+.demo-scene-note{font-size:9px;color:var(--muted);margin-top:6px}
 </style>
+
+
+<style>
+/* Haptic fallback: tactile visual response even when iOS web APIs expose no vibration */
+button:active, .profile-card:active {
+  transform: scale(.985);
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -408,8 +412,25 @@ button.feedback-active:active{
     <video id="cameraPreview" autoplay playsinline muted></video>
     <canvas id="captureCanvas" hidden></canvas>
     <div class="camera-label">FRAME · <span id="cameraProfile">PORTRAIT</span></div>
+<div class="demo-scene-control">
+  <div class="demo-scene-kicker">DEMO SCENE</div>
+  <select id="demoScene" aria-label="Demo scene">
+    <option value="golden_portrait">Golden Hour Portrait</option>
+    <option value="midday_portrait">Hard Midday Portrait</option>
+    <option value="window_portrait">Window Portrait</option>
+    <option value="lowlight_portrait">Low Light Portrait</option>
+    <option value="after_sunset">After Sunset Portrait</option>
+    <option value="city_portrait">Environmental City Portrait</option>
+    <option value="moving_street">Moving Street Subject</option>
+    <option value="bird_flight">Bird in Flight</option>
+    <option value="landscape_golden">Landscape Golden Hour</option>
+    <option value="night_street">Night Street</option>
+  </select>
+  <div class="demo-scene-note">Used only for the demo engine — no AI yet.</div>
+</div>
+
     <div class="camera-status" id="cameraStatus">CAMERA READY</div>
-    <div class="camera-bottom"><span>50MM</span><span id="cameraState">LIVE</span></div>
+    <div class="camera-bottom"><span id="cameraLensLabel">50MM</span><span id="cameraState">LIVE</span></div>
   </div>
   <div style="margin-top:14px"><button class="primary" onclick="analyze()">CAPTURE &amp; ANALYZE</button></div>
 </section>
@@ -561,78 +582,11 @@ button.feedback-active:active{
 <script>
 let currentTheme='dark';
 
-let cameraStream = null;
-let capturedImage = null;
-
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if(id === 'analyze') startCamera();
-  else stopCamera();
 }
-
-async function startCamera(){
-  const video=document.getElementById('cameraPreview');
-  const status=document.getElementById('cameraStatus');
-  if(!video || cameraStream) return;
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    showCameraError('Camera access is not available in this browser.');
-    return;
-  }
-  try{
-    cameraStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},
-      audio:false
-    });
-    video.srcObject=cameraStream;
-    status.textContent='LIVE';
-    document.getElementById('cameraState').textContent='LIVE';
-  }catch(err){
-    console.warn(err);
-    showCameraError('FRAME needs camera access to analyze the scene. Allow camera access in Safari and try again.');
-  }
-}
-
-function stopCamera(){
-  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
-  const video=document.getElementById('cameraPreview');
-  if(video) video.srcObject=null;
-}
-
-function showCameraError(message){
-  const box=document.getElementById('cameraBox');
-  if(!box || box.querySelector('.camera-error')) return;
-  const e=document.createElement('div');
-  e.className='camera-error';
-  e.textContent=message;
-  box.appendChild(e);
-  document.getElementById('cameraState').textContent='NO CAMERA';
-}
-
-function captureFrame(){
-  const video=document.getElementById('cameraPreview');
-  const canvas=document.getElementById('captureCanvas');
-  if(!video || !cameraStream || video.readyState < 2) return false;
-  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-  canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
-  capturedImage=canvas.toDataURL('image/jpeg',0.9);
-  const flash=document.createElement('div');
-  flash.className='capture-flash';
-  document.getElementById('cameraBox').appendChild(flash);
-  requestAnimationFrame(()=>flash.classList.add('flash'));
-  setTimeout(()=>flash.remove(),220);
-  return true;
-}
-
-function analyze(){
-  if(!captureFrame()){
-    showCameraError('FRAME could not capture the camera image. Make sure the camera is ready and try again.');
-    return;
-  }
-  stopCamera();
-  show('loading');
-  setTimeout(()=>show('shoot'),1700);
-}
+function analyze(){ if(!captureFrame()) return; stopCamera(); show('loading'); setTimeout(()=>{applyEngineRecommendation(); show('shoot')},1700); }
 function selectProfile(el,name){
   document.querySelectorAll('.profile-card').forEach(c=>{
     c.classList.remove('active');
@@ -712,10 +666,108 @@ loadSavedSettings();
 
 
 
+
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
+const FRAME_ENGINE = {
+  golden_portrait: {
+    subject:"Person", movement:"Low", light:"Medium", environment:"Dark", depth:"Shallow",
+    values:{
+      Portrait:{lens:"50mm", aperture:"f/1.2", shutter:"1/200", iso:"125", wb:"5200K", ev:"−0.3 EV", creative:{lens:"50mm",aperture:"f/2.0",shutter:"1/320",iso:"200",wb:"5200K",ev:"−0.3 EV"}},
+      Street:{lens:"50mm", aperture:"f/3.2", shutter:"1/500", iso:"400", wb:"5200K", ev:"−0.3 EV", creative:{lens:"50mm",aperture:"f/1.8",shutter:"1/1000",iso:"640",wb:"5200K",ev:"−0.3 EV"}},
+      Wildlife:{lens:"200mm", aperture:"f/4", shutter:"1/1000", iso:"800", wb:"5600K", ev:"−0.3 EV", creative:{lens:"200mm",aperture:"f/4",shutter:"1/2000",iso:"1600",wb:"5600K",ev:"−0.3 EV"}},
+      Landscape:{lens:"24mm", aperture:"f/8", shutter:"1/80", iso:"100", wb:"5200K", ev:"−0.7 EV", creative:{lens:"35mm",aperture:"f/5.6",shutter:"1/250",iso:"100",wb:"5200K",ev:"−0.3 EV"}}
+    }
+  },
+  midday_portrait:{subject:"Person",movement:"Low",light:"High",environment:"Bright",depth:"Shallow",
+    values:{Portrait:{lens:"50mm",aperture:"f/1.2",shutter:"1/2000",iso:"100",wb:"5600K",ev:"−0.3 EV"},Street:{lens:"50mm",aperture:"f/4",shutter:"1/1000",iso:"100",wb:"5600K",ev:"−0.3 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/2000",iso:"100",wb:"5600K",ev:"−0.3 EV"},Landscape:{lens:"35mm",aperture:"f/8",shutter:"1/500",iso:"100",wb:"5600K",ev:"−0.7 EV"}}},
+  window_portrait:{subject:"Person",movement:"Low",light:"Low",environment:"Indoor",depth:"Medium",
+    values:{Portrait:{lens:"50mm",aperture:"f/1.8",shutter:"1/125",iso:"400",wb:"4500K",ev:"−0.3 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"640",wb:"4500K",ev:"−0.3 EV"},Wildlife:{lens:"85mm",aperture:"f/2.8",shutter:"1/250",iso:"800",wb:"4500K",ev:"−0.3 EV"},Landscape:{lens:"35mm",aperture:"f/5.6",shutter:"1/60",iso:"400",wb:"4500K",ev:"−0.3 EV"}}},
+  lowlight_portrait:{subject:"Person",movement:"Low",light:"Very Low",environment:"Dark",depth:"Shallow",
+    values:{Portrait:{lens:"50mm",aperture:"f/1.2",shutter:"1/80",iso:"400",wb:"4000K",ev:"−0.3 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"1600",wb:"4000K",ev:"−0.3 EV"},Wildlife:{lens:"200mm",aperture:"f/2.8",shutter:"1/500",iso:"3200",wb:"4000K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/4",shutter:"1/15",iso:"800",wb:"4000K",ev:"−0.7 EV"}}},
+  after_sunset:{subject:"Person",movement:"Low",light:"Very Low",environment:"Dark",depth:"Medium",
+    values:{Portrait:{lens:"50mm",aperture:"f/1.2",shutter:"1/100",iso:"1600",wb:"3600K",ev:"−0.7 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"2000",wb:"3600K",ev:"−0.7 EV"},Wildlife:{lens:"200mm",aperture:"f/2.8",shutter:"1/500",iso:"6400",wb:"3600K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/2.8",shutter:"1/15",iso:"3200",wb:"3600K",ev:"−0.7 EV"}}},
+  city_portrait:{subject:"Person",movement:"Medium",light:"Medium",environment:"Urban",depth:"Medium",
+    values:{Portrait:{lens:"50mm",aperture:"f/2.8",shutter:"1/320",iso:"400",wb:"5200K",ev:"−0.3 EV"},Street:{lens:"50mm",aperture:"f/3.2",shutter:"1/500",iso:"640",wb:"5200K",ev:"−0.3 EV"},Wildlife:{lens:"85mm",aperture:"f/4",shutter:"1/640",iso:"800",wb:"5200K",ev:"−0.3 EV"},Landscape:{lens:"35mm",aperture:"f/5.6",shutter:"1/250",iso:"200",wb:"5200K",ev:"−0.3 EV"}}},
+  moving_street:{subject:"Person",movement:"High",light:"Medium",environment:"Urban",depth:"Medium",
+    values:{Portrait:{lens:"50mm",aperture:"f/2.8",shutter:"1/800",iso:"500",wb:"5200K",ev:"−0.3 EV"},Street:{lens:"50mm",aperture:"f/4",shutter:"1/1000",iso:"640",wb:"5200K",ev:"−0.3 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/1600",iso:"800",wb:"5200K",ev:"−0.3 EV"},Landscape:{lens:"35mm",aperture:"f/5.6",shutter:"1/500",iso:"200",wb:"5200K",ev:"−0.3 EV"}}},
+  bird_flight:{subject:"Bird",movement:"Very High",light:"Medium",environment:"Open",depth:"Medium",
+    values:{Portrait:{lens:"200mm",aperture:"f/4",shutter:"1/1600",iso:"800",wb:"5600K",ev:"−0.3 EV"},Street:{lens:"200mm",aperture:"f/5.6",shutter:"1/2000",iso:"1250",wb:"5600K",ev:"−0.3 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/2000",iso:"1600",wb:"5600K",ev:"−0.3 EV"},Landscape:{lens:"200mm",aperture:"f/5.6",shutter:"1/1000",iso:"800",wb:"5600K",ev:"−0.3 EV"}}},
+  landscape_golden:{subject:"Landscape",movement:"None",light:"Medium",environment:"Open",depth:"Deep",
+    values:{Portrait:{lens:"50mm",aperture:"f/5.6",shutter:"1/250",iso:"100",wb:"5200K",ev:"−0.7 EV"},Street:{lens:"35mm",aperture:"f/5.6",shutter:"1/250",iso:"100",wb:"5200K",ev:"−0.7 EV"},Wildlife:{lens:"200mm",aperture:"f/5.6",shutter:"1/500",iso:"200",wb:"5200K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/8",shutter:"1/80",iso:"100",wb:"5200K",ev:"−0.7 EV"}}},
+  night_street:{subject:"Street",movement:"Medium",light:"Very Low",environment:"Urban",depth:"Medium",
+    values:{Portrait:{lens:"50mm",aperture:"f/1.8",shutter:"1/125",iso:"1600",wb:"3200K",ev:"−0.7 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"3200",wb:"3200K",ev:"−0.7 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/500",iso:"6400",wb:"3200K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/2.8",shutter:"1/15",iso:"1600",wb:"3200K",ev:"−0.7 EV"}}}
+};
+
+function currentProfile(){
+  return localStorage.getItem('frameProfile') || 'Portrait';
 }
+function currentScene(){
+  return document.getElementById('demoScene')?.value || 'golden_portrait';
+}
+function applyEngineRecommendation(){
+  const scene=FRAME_ENGINE[currentScene()];
+  const profile=currentProfile();
+  const values=scene.values[profile] || scene.values.Portrait;
+  const creative=values.creative || scene.values.Portrait.creative || values;
+  window.frameDemoRecommendation={...values,creative,scene,profile};
+
+  // The existing prototype's recommendation elements vary by version.
+  // Update by label/text where possible.
+  const all=document.querySelectorAll('*');
+  const fields={lens:values.lens,aperture:values.aperture,shutter:values.shutter,iso:values.iso,wb:values.wb,ev:values.ev};
+  all.forEach(el=>{
+    if(el.children.length===0){
+      const t=el.textContent.trim().toLowerCase();
+      if(t==='50mm'||t==='85mm'||t==='200mm'||t==='24mm'||t==='35mm') el.textContent=values.lens;
+      else if(/^f\/[\d.]+$/.test(t)) el.textContent=values.aperture;
+      else if(/^1\/\d+$/.test(t)) el.textContent=values.shutter;
+      else if(/^iso\s*\d+$/i.test(t)) el.textContent='ISO '+values.iso;
+      else if(/^\d{4}k$/.test(t)) el.textContent=values.wb;
+      else if(/^[−-]?\d+\.\d+\s*ev$/i.test(t)) el.textContent=values.ev;
+    }
+  });
+}
+window.addEventListener('load',()=>{
+  const s=document.getElementById('demoScene');
+  if(s) s.addEventListener('change',applyEngineRecommendation);
+  applyEngineRecommendation();
+});
 </script>
+
+<script>
+let cameraStream=null,capturedImage=null;
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='analyze')startCamera();else stopCamera();}
+async function startCamera(){const v=document.getElementById('cameraPreview');if(!v||cameraStream)return;try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});v.srcObject=cameraStream;}catch(e){console.warn(e)}}
+function stopCamera(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}const v=document.getElementById('cameraPreview');if(v)v.srcObject=null}
+function captureFrame(){const v=document.getElementById('cameraPreview'),c=document.getElementById('captureCanvas');if(!v||!cameraStream||v.readyState<2)return false;c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0,c.width,c.height);capturedImage=c.toDataURL('image/jpeg',.9);return true}
+function analyze(){if(!captureFrame())return;stopCamera();show('loading');setTimeout(()=>{applyEngineRecommendation();show('shoot')},1700)}
+</script>
+
+<script>
+/* FRAME Demo 0.2 — haptic feedback layer.
+   Uses the platform vibration API when available. iOS Safari/PWA currently
+   does not expose navigator.vibrate, so native haptics will require the
+   future native iOS build (e.g. UIImpactFeedbackGenerator). */
+function frameHaptic(type='light'){
+  const enabled = localStorage.getItem('frameHaptics_v12') !== 'off';
+  if(!enabled) return;
+  if('vibrate' in navigator){
+    const pattern = type === 'success' ? [8,18,12] : type === 'selection' ? 6 : 4;
+    try { navigator.vibrate(pattern); } catch(e) {}
+  }
+}
+
+document.addEventListener('click', (event)=>{
+  const target = event.target.closest('button, .profile-card, select');
+  if(!target) return;
+  const id = target.id || '';
+  if(id === 'hapticsOn' || id === 'hapticsOff') return;
+  if(target.classList.contains('profile-card')) frameHaptic('selection');
+  else if(id === 'analyzeBtn' || /analyze scene/i.test(target.textContent)) frameHaptic('selection');
+  else if(/shoot/i.test(target.textContent)) frameHaptic('success');
+  else frameHaptic('light');
+});
+</script>
+
 </body>
 </html>
