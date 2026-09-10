@@ -477,7 +477,7 @@ button:active, .profile-card:active {
       <div class="setting"><div class="label">Shutter</div><div class="value" id="recShutter">1/1000</div><div class="sub">recommended shutter</div></div>
       <div class="setting"><div class="label">ISO</div><div class="value" id="recISO">400</div><div class="sub">recommended ISO</div></div>
       <div class="setting"><div class="label">White Balance</div><div class="value" id="recWB">5200K</div><div class="sub">recommended white balance</div></div>
-      <div class="setting"><div class="label">Exposure</div><div class="value" id="recEV">−0.3</div><div class="sub">protect highlights</div></div>
+      <div class="setting"><div class="label">Exposure</div><div class="value" id="recEV">−0.3</div><div class="sub" id="recEVSub">protect highlights</div></div>
     </div>
     <div class="why" id="recWhy"><strong>WHY</strong> — FRAME balances motion, depth, light and your profile preferences.</div>
   </div>
@@ -839,11 +839,17 @@ function aiRecommendation(scene, profile){
           ? 'Low light requires a balance between shutter speed, aperture and ISO.'
           : 'FRAME balances what it sees with your profile preferences and verified gear.';
 
+  // Creative Alternative: deliberately change the visual approach while
+  // keeping exposure in a sensible range. In low light, opening the aperture
+  // is the creative move, which also allows ISO to come down rather than up.
   const creative={
     lens:'50mm',
-    aperture: depth==='Shallow' ? 'f/2.0' : (aperture==='f/8' ? 'f/5.6' : aperture),
+    aperture: (light==='Low' || light==='Very Low') && depth!=='Shallow' ? 'f/2.0'
+      : depth==='Shallow' ? 'f/2.0'
+      : aperture==='f/8' ? 'f/5.6' : aperture,
     shutter: movement==='Very High' ? '1/1000' : movement==='High' ? '1/500' : shutter,
-    iso: movement==='High' || movement==='Very High' ? (iso==='100'?'400':iso) : iso,
+    iso: (light==='Low' || light==='Very Low') && depth!=='Shallow' ? '100'
+      : movement==='High' || movement==='Very High' ? (iso==='100'?'400':iso) : iso,
     wb, ev
   };
 
@@ -860,6 +866,10 @@ function applyAIRecommendation(scene){
   document.getElementById('recISO').textContent=values.iso;
   document.getElementById('recWB').textContent=values.wb;
   document.getElementById('recEV').textContent=values.ev.replace(' EV','');
+  const evSub=document.getElementById('recEVSub');
+  if(evSub) evSub.textContent=values.ev==='0 EV' ? 'neutral starting point' : 'protect highlights';
+  const evSub=document.getElementById('recEVSub');
+  if(evSub) evSub.textContent=values.ev==='0 EV' ? 'neutral starting point' : 'protect highlights';
   document.getElementById('recommendationTitle').textContent=values.title;
   document.getElementById('recommendationSummary').textContent=`${scene.subject} · ${scene.environment} · ${scene.light_level} light · ${scene.movement} movement.`;
   document.getElementById('recContext').textContent=`${profile.toUpperCase()} · AI SCENE · ${scene.confidence.toUpperCase()} CONFIDENCE`;
@@ -968,6 +978,8 @@ function applyEngineRecommendation(){
   document.getElementById('recISO').textContent=values.iso;
   document.getElementById('recWB').textContent=values.wb;
   document.getElementById('recEV').textContent=values.ev.replace(' EV','');
+  const evSub=document.getElementById('recEVSub');
+  if(evSub) evSub.textContent=values.ev==='0 EV' ? 'neutral starting point' : 'protect highlights';
 
   const title=document.getElementById('recommendationTitle');
   const summary=document.getElementById('recommendationSummary');
