@@ -635,11 +635,6 @@ function show(id){
   else stopCamera();
 }
 
-const FRAME_GEAR = {
-  camera: 'Canon EOS R5',
-  lens: 'RF 50mm F1.2 L USM'
-};
-
 const FRAME_PROFILE_META = {
   Portrait: 'Handheld · Cinematic · Subject Focused',
   Street: 'Environmental · Responsive · High Sharpness',
@@ -653,8 +648,11 @@ function updateHomeSetup(profile){
   const lens=document.getElementById('activeLensName');
   const meta=document.getElementById('activeProfileMeta');
   if(name) name.textContent=profile;
-  if(camera) camera.textContent=FRAME_GEAR.camera;
-  if(lens) lens.textContent=FRAME_GEAR.lens;
+  if(typeof FRAME_GEAR_DB !== 'undefined'){
+    const cam=selectedCamera(), lensObj=selectedLens();
+    if(camera) camera.textContent=cam.name;
+    if(lens) lens.textContent=lensObj.name;
+  }
   if(meta) meta.textContent=FRAME_PROFILE_META[profile] || '';
 }
 
@@ -870,9 +868,6 @@ function loadSavedSettings(){
   document.getElementById('cameraProfile').textContent = savedProfile.toUpperCase();
 }
 
-loadSavedSettings();
-renderGear();
-renderGearSelectors();
 try{ if(screen.orientation?.lock) screen.orientation.lock('portrait').catch(()=>{}); }catch(e){}
 </script>
 
@@ -953,6 +948,10 @@ function renderGearSelectors(){
 }
 function selectCamera(id){localStorage.setItem('frameCamera',id);const lenses=Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.mount===FRAME_GEAR_DB.cameras[id].mount);if(!lenses.some(l=>l.id===selectedLensId())) localStorage.setItem('frameLens',lenses[0].id);renderGear();renderGearSelectors();show('gear');}
 function selectLens(id){if(!FRAME_GEAR_DB.lenses[id])return;localStorage.setItem('frameLens',id);renderGear();renderGearSelectors();show('gear');}
+loadSavedSettings();
+renderGear();
+renderGearSelectors();
+
 function validateAperture(aperture,lens){
   const m=String(aperture).match(/f\/?([0-9.]+)/i); if(!m) return aperture;
   const n=Number(m[1]); const clamped=Math.min(Math.max(n,lens.maxAperture),lens.minAperture);
