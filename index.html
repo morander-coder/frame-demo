@@ -396,7 +396,11 @@ textarea,select{font-family:inherit}
 .gear-card{margin-bottom:8px}
 .feedback-status-success{color:#3F8F68}
 .feedback-status-error{color:var(--danger)}
-@media (orientation:landscape){body{display:block;transform:none}.app{max-width:430px;height:100vh}.screen{height:100vh}}
+html,body{width:100%;height:100%;overflow:hidden}
+@media (orientation:landscape){
+  body{width:100vh;height:100vw;overflow:hidden;}
+  .app{width:100vh;max-width:430px;height:100vw;transform:rotate(90deg);transform-origin:top left;position:absolute;top:0;left:100%;}
+}
 </style>
 </head>
 <body>
@@ -453,15 +457,11 @@ textarea,select{font-family:inherit}
   <div class="camera real-camera" id="cameraBox">
     <video id="cameraPreview" autoplay playsinline muted></video>
     <canvas id="captureCanvas" hidden></canvas>
-    <div class="camera-label">FRAME · <span id="cameraProfile">PORTRAIT</span></div>
 <div class="demo-scene-control ai-scene-control">
   <div class="demo-scene-kicker">AI SCENE UNDERSTANDING</div>
   <div class="ai-scene-status" id="aiSceneStatus">FRAME will read the scene from the captured image.</div>
   <div class="demo-scene-note">No manual scene selection in the shooting flow.</div>
 </div>
-
-    <div class="camera-status" id="cameraStatus">CAMERA READY</div>
-    <div class="camera-bottom"><span id="cameraLensLabel">50MM</span><span id="cameraState">LIVE</span></div>
   </div>
   <div style="margin-top:14px"><button class="primary" onclick="analyze()">CAPTURE &amp; ANALYZE</button></div>
 </section>
@@ -628,13 +628,16 @@ textarea,select{font-family:inherit}
 
 </div>
 <script>
+const FRAME_BUILD_VERSION='pre-beta-02';
 let currentTheme='dark';
+let frameLastScreen='home';
 
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const target=document.getElementById(id);
   if(!target) return;
   target.classList.add('active');
+  frameLastScreen=id;
   if(id==='analyze') startCamera();
   else stopCamera();
 }
@@ -875,6 +878,8 @@ function loadSavedSettings(){
 }
 
 loadSavedSettings();
+renderGear();
+renderGearSelectors();
 try{ if(screen.orientation?.lock) screen.orientation.lock('portrait').catch(()=>{}); }catch(e){}
 </script>
 
@@ -955,9 +960,6 @@ function renderGearSelectors(){
 }
 function selectCamera(id){localStorage.setItem('frameCamera',id);const lenses=Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.mount===FRAME_GEAR_DB.cameras[id].mount);if(!lenses.some(l=>l.id===selectedLensId())) localStorage.setItem('frameLens',lenses[0].id);renderGear();renderGearSelectors();show('gear');}
 function selectLens(id){if(!FRAME_GEAR_DB.lenses[id])return;localStorage.setItem('frameLens',id);renderGear();renderGearSelectors();show('gear');}
-renderGear();
-renderGearSelectors();
-
 function validateAperture(aperture,lens){
   const m=String(aperture).match(/f\/?([0-9.]+)/i); if(!m) return aperture;
   const n=Number(m[1]); const clamped=Math.min(Math.max(n,lens.maxAperture),lens.minAperture);
@@ -1002,8 +1004,11 @@ function applyEngineRecommendation(){
   const sceneKey=currentScene();
   const scene=FRAME_ENGINE[sceneKey] || FRAME_ENGINE.golden_portrait;
   const profile=currentProfile();
-  const values=scene.values[profile] || scene.values.Portrait;
-  const creative=creativeAlternative(values,scene);
+  const rawValues=scene.values[profile] || scene.values.Portrait;
+  const rawCreative=creativeAlternative(rawValues,scene);
+  const validated=validateRecommendation({...rawValues,creative:rawCreative});
+  const values={...validated};
+  const creative=validated.creative;
 
   window.frameDemoRecommendation={sceneKey,scene,profile,values,creative};
 
@@ -1080,8 +1085,9 @@ function initEngineTest(){
 function updateEngineTest(){
   const sceneKey=document.getElementById('testScene')?.value||'golden_portrait';
   const profile=document.getElementById('testProfile')?.value||'Portrait';
-  const scene=FRAME_ENGINE[sceneKey]; const values=scene?.values?.[profile];
-  if(!values) return;
+  const scene=FRAME_ENGINE[sceneKey]; const rawValues=scene?.values?.[profile];
+  if(!rawValues) return;
+  const values=validateRecommendation({...rawValues,creative:creativeAlternative(rawValues,scene)});
   document.getElementById('testVerdict').textContent='ENGINE OK';
   document.getElementById('testAction').textContent=scene.movement==='High'||scene.movement==='Very High'?'MOTION LEADS':scene.depth==='Shallow'?'DEPTH LEADS':scene.depth==='Deep'?'DETAIL LEADS':'BALANCE';
   const title=scene.movement==='Very High'||scene.movement==='High'?'FREEZE':scene.depth==='Shallow'?'ISOLATE':scene.depth==='Deep'?'HOLD DETAIL':scene.light==='Very Low'?'PROTECT':'BALANCE';
@@ -1109,7 +1115,7 @@ async function sendDeveloperFeedback(){
   const status=document.getElementById('feedbackStatus');
   if(!text){status.textContent='Please add a message.';status.className='note feedback-status-error';return;}
   const rec=window.frameDemoRecommendation||{};
-  const context={version:'pre-beta',screen:document.querySelector('.screen.active')?.id||'unknown',test:document.getElementById('testScene')?.value||null,profile:currentProfile(),camera:selectedCamera().name,lens:selectedLens().name,timestamp:new Date().toISOString()};
+  const context={version:FRAME_BUILD_VERSION,screen:frameLastScreen||document.querySelector('.screen.active')?.id||'unknown',test:document.getElementById('testScene')?.value||null,profile:currentProfile(),camera:selectedCamera().name,lens:selectedLens().name,timestamp:new Date().toISOString()};
   status.textContent='SENDING…';status.className='note';
   try{
     const r=await fetch('https://frame-api-khaki.vercel.app/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({category,message:text,context})});
@@ -1147,5 +1153,6 @@ document.addEventListener('click', (event)=>{
 </script>
 
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}</script>
+<!-- FRAME PRE-BETA BUILD 02 -->
 </body>
 </html>
