@@ -910,29 +910,65 @@ const FRAME_ENGINE = {
 const FRAME_GEAR_DB={
   cameras:{
     canon_r5:{id:'canon_r5',brand:'Canon',name:'Canon EOS R5',sensor:'Full Frame',megapixels:45,mount:'RF',ibis:true,verified:true,verifiedSource:'Canon'},
+    canon_r5ii:{id:'canon_r5ii',brand:'Canon',name:'Canon EOS R5 Mark II',sensor:'Full Frame',megapixels:45,mount:'RF',ibis:true,verified:true,verifiedSource:'Canon'},
+    canon_r6ii:{id:'canon_r6ii',brand:'Canon',name:'Canon EOS R6 Mark II',sensor:'Full Frame',megapixels:24.2,mount:'RF',ibis:true,verified:true,verifiedSource:'Canon'},
+    canon_r8:{id:'canon_r8',brand:'Canon',name:'Canon EOS R8',sensor:'Full Frame',megapixels:24.2,mount:'RF',ibis:false,verified:true,verifiedSource:'Canon'},
+    canon_r7:{id:'canon_r7',brand:'Canon',name:'Canon EOS R7',sensor:'APS-C',megapixels:32.5,mount:'RF',ibis:true,verified:true,verifiedSource:'Canon'},
     sony_a7iv:{id:'sony_a7iv',brand:'Sony',name:'Sony α7 IV',sensor:'Full Frame',megapixels:33,mount:'E',ibis:true,verified:true,verifiedSource:'Sony'},
+    sony_a7v:{id:'sony_a7v',brand:'Sony',name:'Sony α7 V',sensor:'Full Frame',megapixels:33,mount:'E',ibis:true,verified:true,verifiedSource:'Sony'},
+    sony_a7rv:{id:'sony_a7rv',brand:'Sony',name:'Sony α7R V',sensor:'Full Frame',megapixels:61,mount:'E',ibis:true,verified:true,verifiedSource:'Sony'},
+    sony_a7siii:{id:'sony_a7siii',brand:'Sony',name:'Sony α7S III',sensor:'Full Frame',megapixels:12.1,mount:'E',ibis:true,verified:true,verifiedSource:'Sony'},
+    sony_a6700:{id:'sony_a6700',brand:'Sony',name:'Sony α6700',sensor:'APS-C',megapixels:26,mount:'E',ibis:true,verified:true,verifiedSource:'Sony'},
     nikon_z8:{id:'nikon_z8',brand:'Nikon',name:'Nikon Z8',sensor:'Full Frame',megapixels:45.7,mount:'Z',ibis:true,verified:true,verifiedSource:'Nikon'},
-    fuji_xt5:{id:'fuji_xt5',brand:'Fujifilm',name:'FUJIFILM X-T5',sensor:'APS-C',megapixels:40.2,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'}
+    nikon_z6iii:{id:'nikon_z6iii',brand:'Nikon',name:'Nikon Z6III',sensor:'Full Frame',megapixels:24.5,mount:'Z',ibis:true,verified:true,verifiedSource:'Nikon'},
+    nikon_z5ii:{id:'nikon_z5ii',brand:'Nikon',name:'Nikon Z5II',sensor:'Full Frame',megapixels:24.5,mount:'Z',ibis:true,verified:true,verifiedSource:'Nikon'},
+    nikon_zf:{id:'nikon_zf',brand:'Nikon',name:'Nikon Zf',sensor:'Full Frame',megapixels:24.5,mount:'Z',ibis:true,verified:true,verifiedSource:'Nikon'},
+    fuji_xt5:{id:'fuji_xt5',brand:'Fujifilm',name:'FUJIFILM X-T5',sensor:'APS-C',megapixels:40.2,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'},
+    fuji_xh2:{id:'fuji_xh2',brand:'Fujifilm',name:'FUJIFILM X-H2',sensor:'APS-C',megapixels:40.2,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'},
+    fuji_xs20:{id:'fuji_xs20',brand:'Fujifilm',name:'FUJIFILM X-S20',sensor:'APS-C',megapixels:26.1,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'},
+    fuji_xt50:{id:'fuji_xt50',brand:'Fujifilm',name:'FUJIFILM X-T50',sensor:'APS-C',megapixels:40.2,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'},
+    fuji_x100v:{id:'fuji_x100v',brand:'Fujifilm',name:'FUJIFILM X100V',sensor:'APS-C',megapixels:26.1,mount:'fixed',ibis:false,verified:true,verifiedSource:'Fujifilm',fixedLensId:'fuji_x100v_lens'},
+    fuji_x100vi:{id:'fuji_x100vi',brand:'Fujifilm',name:'FUJIFILM X100VI',sensor:'APS-C',megapixels:40.2,mount:'fixed',ibis:true,verified:true,verifiedSource:'Fujifilm',fixedLensId:'fuji_x100vi_lens'}
   },
   lenses:{
     canon_rf50:{id:'canon_rf50',brand:'Canon',name:'RF 50mm F1.2 L USM',mount:'RF',focalMin:50,focalMax:50,maxAperture:1.2,minAperture:16,stabilization:false,verified:true},
+    canon_rf1535:{id:'canon_rf1535',brand:'Canon',name:'RF 15-35mm F2.8 L IS USM',mount:'RF',focalMin:15,focalMax:35,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
     canon_rf2470:{id:'canon_rf2470',brand:'Canon',name:'RF 24-70mm F2.8 L IS USM',mount:'RF',focalMin:24,focalMax:70,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
+    canon_rf24105:{id:'canon_rf24105',brand:'Canon',name:'RF 24-105mm F4 L IS USM',mount:'RF',focalMin:24,focalMax:105,maxAperture:4,minAperture:22,stabilization:true,verified:true},
+    canon_rf70200:{id:'canon_rf70200',brand:'Canon',name:'RF 70-200mm F2.8 L IS USM',mount:'RF',focalMin:70,focalMax:200,maxAperture:2.8,minAperture:32,stabilization:true,verified:true},
     canon_rf100500:{id:'canon_rf100500',brand:'Canon',name:'RF 100-500mm F4.5-7.1 L IS USM',mount:'RF',focalMin:100,focalMax:500,maxAperture:4.5,minAperture:32,stabilization:true,verified:true},
+    canon_rf100macro:{id:'canon_rf100macro',brand:'Canon',name:'RF 100mm F2.8 L Macro IS USM',mount:'RF',focalMin:100,focalMax:100,maxAperture:2.8,minAperture:32,stabilization:true,verified:true},
+
     sony_fe50:{id:'sony_fe50',brand:'Sony',name:'FE 50mm F1.2 GM',mount:'E',focalMin:50,focalMax:50,maxAperture:1.2,minAperture:16,stabilization:false,verified:true},
+    sony_fe1635:{id:'sony_fe1635',brand:'Sony',name:'FE 16-35mm F2.8 GM II',mount:'E',focalMin:16,focalMax:35,maxAperture:2.8,minAperture:22,stabilization:false,verified:true},
     sony_fe2470:{id:'sony_fe2470',brand:'Sony',name:'FE 24-70mm F2.8 GM II',mount:'E',focalMin:24,focalMax:70,maxAperture:2.8,minAperture:22,stabilization:false,verified:true},
+    sony_fe70200:{id:'sony_fe70200',brand:'Sony',name:'FE 70-200mm F2.8 GM OSS II',mount:'E',focalMin:70,focalMax:200,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
+    sony_fe90macro:{id:'sony_fe90macro',brand:'Sony',name:'FE 90mm F2.8 Macro G OSS',mount:'E',focalMin:90,focalMax:90,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
     sony_fe200600:{id:'sony_fe200600',brand:'Sony',name:'FE 200-600mm F5.6-6.3 G OSS',mount:'E',focalMin:200,focalMax:600,maxAperture:5.6,minAperture:36,stabilization:true,verified:true},
+
     nikon_z50:{id:'nikon_z50',brand:'Nikon',name:'NIKKOR Z 50mm f/1.2 S',mount:'Z',focalMin:50,focalMax:50,maxAperture:1.2,minAperture:16,stabilization:false,verified:true},
+    nikon_z1424:{id:'nikon_z1424',brand:'Nikon',name:'NIKKOR Z 14-24mm f/2.8 S',mount:'Z',focalMin:14,focalMax:24,maxAperture:2.8,minAperture:22,stabilization:false,verified:true},
     nikon_z2470:{id:'nikon_z2470',brand:'Nikon',name:'NIKKOR Z 24-70mm f/2.8 S',mount:'Z',focalMin:24,focalMax:70,maxAperture:2.8,minAperture:22,stabilization:false,verified:true},
+    nikon_z2470f4:{id:'nikon_z2470f4',brand:'Nikon',name:'NIKKOR Z 24-70mm f/4 S',mount:'Z',focalMin:24,focalMax:70,maxAperture:4,minAperture:22,stabilization:true,verified:true},
+    nikon_z70200:{id:'nikon_z70200',brand:'Nikon',name:'NIKKOR Z 70-200mm f/2.8 VR S',mount:'Z',focalMin:70,focalMax:200,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
     nikon_z100400:{id:'nikon_z100400',brand:'Nikon',name:'NIKKOR Z 100-400mm f/4.5-5.6 VR S',mount:'Z',focalMin:100,focalMax:400,maxAperture:4.5,minAperture:32,stabilization:true,verified:true},
+    nikon_z180600:{id:'nikon_z180600',brand:'Nikon',name:'NIKKOR Z 180-600mm f/5.6-6.3 VR',mount:'Z',focalMin:180,focalMax:600,maxAperture:5.6,minAperture:32,stabilization:true,verified:true},
+
+    fuji_x100v_lens:{id:'fuji_x100v_lens',brand:'Fujifilm',name:'FUJINON 23mm F2 (X100V built-in)',mount:'fixed',focalMin:23,focalMax:23,maxAperture:2,minAperture:16,stabilization:false,verified:true,fixed:true},
+    fuji_x100vi_lens:{id:'fuji_x100vi_lens',brand:'Fujifilm',name:'FUJINON 23mm F2 (X100VI built-in)',mount:'fixed',focalMin:23,focalMax:23,maxAperture:2,minAperture:16,stabilization:false,verified:true,fixed:true},
     fuji_xf33:{id:'fuji_xf33',brand:'Fujifilm',name:'FUJINON XF33mmF1.4 R LM WR',mount:'X',focalMin:33,focalMax:33,maxAperture:1.4,minAperture:16,stabilization:false,verified:true},
-    fuji_xf1680:{id:'fuji_xf1680',brand:'Fujifilm',name:'FUJINON XF16-80mmF4 R OIS WR',mount:'X',focalMin:16,focalMax:80,maxAperture:4,minAperture:22,stabilization:true,verified:true}
+    fuji_xf1655:{id:'fuji_xf1655',brand:'Fujifilm',name:'FUJINON XF16-55mmF2.8 R LM WR II',mount:'X',focalMin:16,focalMax:55,maxAperture:2.8,minAperture:22,stabilization:false,verified:true},
+    fuji_xf1680:{id:'fuji_xf1680',brand:'Fujifilm',name:'FUJINON XF16-80mmF4 R OIS WR',mount:'X',focalMin:16,focalMax:80,maxAperture:4,minAperture:22,stabilization:true,verified:true},
+    fuji_xf50140:{id:'fuji_xf50140',brand:'Fujifilm',name:'FUJINON XF50-140mmF2.8 R LM OIS WR',mount:'X',focalMin:50,focalMax:140,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
+    fuji_xf70300:{id:'fuji_xf70300',brand:'Fujifilm',name:'FUJINON XF70-300mmF4-5.6 R LM OIS WR',mount:'X',focalMin:70,focalMax:300,maxAperture:4,minAperture:22,stabilization:true,verified:true},
+    fuji_xf80150:{id:'fuji_xf80150',brand:'Fujifilm',name:'FUJINON XF80-150mmF2.8 R LM OIS WR',mount:'X',focalMin:80,focalMax:150,maxAperture:2.8,minAperture:22,stabilization:true,verified:true}
   }
 };
 function selectedCameraId(){return localStorage.getItem('frameCamera')||'canon_r5';}
 function selectedLensId(){return localStorage.getItem('frameLens')||'canon_rf50';}
 function selectedCamera(){return FRAME_GEAR_DB.cameras[selectedCameraId()]||FRAME_GEAR_DB.cameras.canon_r5;}
 function selectedLens(){return FRAME_GEAR_DB.lenses[selectedLensId()]||FRAME_GEAR_DB.lenses.canon_rf50;}
-function compatibleLenses(){const cam=selectedCamera();return Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.mount===cam.mount&&l.verified);}
+function compatibleLenses(){const cam=selectedCamera();return Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.verified&&(cam.mount==='fixed'?l.id===cam.fixedLensId:l.mount===cam.mount));}
 function formatLensRange(l){return l.focalMin===l.focalMax?`${l.focalMin}mm`:`${l.focalMin}–${l.focalMax}mm`}
 function renderGear(){
   const cam=selectedCamera(), lens=selectedLens();
@@ -940,15 +976,16 @@ function renderGear(){
   document.getElementById('activeLensName').textContent=lens.name;
   document.getElementById('settingsGearSummary').textContent=`${cam.name.replace('Canon EOS ','').replace('Sony α','Sony α').replace('FUJIFILM ','')} · ${formatLensRange(lens)}`;
   document.getElementById('cameraGearList').innerHTML=`<div class="profile-card active gear-card"><div><h3>${cam.name}</h3><p>${cam.sensor} · ${cam.megapixels} MP · ${cam.ibis?'IBIS':'No IBIS'}</p></div><div class="chev">✓</div></div>`;
-  document.getElementById('lensGearList').innerHTML=`<div class="profile-card active gear-card"><div><h3>${lens.name}</h3><p>${formatLensRange(lens)} · f/${lens.maxAperture}–f/${lens.minAperture}</p></div><div class="chev">✓</div></div>`;
+  document.getElementById('lensGearList').innerHTML=`<div class="profile-card active gear-card"><div><h3>${lens.name}</h3><p>${formatLensRange(lens)} · f/${lens.maxAperture}–f/${lens.minAperture}${lens.fixed?' · Built-in':''}</p></div><div class="chev">✓</div></div>`;
 }
 function renderGearSelectors(){
   const cams=Object.values(FRAME_GEAR_DB.cameras); const camId=selectedCameraId();
   document.getElementById('cameraSelectList').innerHTML=cams.map(c=>`<div class="profile-card gear-card ${c.id===camId?'gear-selected':''}" onclick="selectCamera('${c.id}')"><div><h3>${c.name}</h3><p>${c.sensor} · ${c.megapixels} MP · ${c.mount} Mount</p></div><div class="chev">${c.id===camId?'✓':'→'}</div></div>`).join('');
   const lensId=selectedLensId();
-  document.getElementById('lensSelectList').innerHTML=compatibleLenses().map(l=>`<div class="profile-card gear-card ${l.id===lensId?'gear-selected':''}" onclick="selectLens('${l.id}')"><div><h3>${l.name}</h3><p>${formatLensRange(l)} · f/${l.maxAperture}–f/${l.minAperture}${l.stabilization?' · IS/OSS/VR':''}</p></div><div class="chev">${l.id===lensId?'✓':'→'}</div></div>`).join('');
+  document.getElementById('lensSelectList').innerHTML=compatibleLenses().map(l=>`<div class="profile-card gear-card ${l.id===lensId?'gear-selected':''}" onclick="selectLens('${l.id}')"><div><h3>${l.name}</h3><p>${formatLensRange(l)} · f/${l.maxAperture}–f/${l.minAperture}${l.fixed?' · Built-in':(l.stabilization?' · IS/OSS/VR':'')}</p></div><div class="chev">${l.id===lensId?'✓':'→'}</div></div>`).join('');
 }
-function selectCamera(id){localStorage.setItem('frameCamera',id);const lenses=Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.mount===FRAME_GEAR_DB.cameras[id].mount);if(!lenses.some(l=>l.id===selectedLensId())) localStorage.setItem('frameLens',lenses[0].id);renderGear();renderGearSelectors();show('gear');}
+function compatibleLensesForCamera(cam){return Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.verified&&(cam.mount==='fixed'?l.id===cam.fixedLensId:l.mount===cam.mount));}
+function selectCamera(id){const cam=FRAME_GEAR_DB.cameras[id];if(!cam)return;localStorage.setItem('frameCamera',id);const lenses=compatibleLensesForCamera(cam);if(!lenses.some(l=>l.id===selectedLensId())) localStorage.setItem('frameLens',lenses[0].id);renderGear();renderGearSelectors();show('gear');}
 function selectLens(id){if(!FRAME_GEAR_DB.lenses[id])return;localStorage.setItem('frameLens',id);renderGear();renderGearSelectors();show('gear');}
 loadSavedSettings();
 renderGear();
