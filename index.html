@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FRAME">
+<meta name="screen-orientation" content="portrait">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FRAME</title>
@@ -387,6 +388,16 @@ button:active, .profile-card:active {
 .report-pass{border-color:rgba(63,143,104,.55)!important}.report-warn{border-color:var(--accent)!important;color:var(--accent)}
 .report-note{font-size:9px;color:var(--muted);margin-top:10px;line-height:1.45}.report-close{position:absolute;right:18px;top:20px}
 </style>
+
+<style id="frame-prebeta-architecture">
+body{overflow:hidden}
+textarea,select{font-family:inherit}
+.gear-selected{border-color:var(--accent)!important}
+.gear-card{margin-bottom:8px}
+.feedback-status-success{color:#3F8F68}
+.feedback-status-error{color:var(--danger)}
+@media (orientation:landscape){body{display:block;transform:none}.app{max-width:430px;height:100vh}.screen{height:100vh}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -477,7 +488,7 @@ button:active, .profile-card:active {
       <div class="setting"><div class="label">Shutter</div><div class="value" id="recShutter">1/1000</div><div class="sub">recommended shutter</div></div>
       <div class="setting"><div class="label">ISO</div><div class="value" id="recISO">400</div><div class="sub">recommended ISO</div></div>
       <div class="setting"><div class="label">White Balance</div><div class="value" id="recWB">5200K</div><div class="sub">recommended white balance</div></div>
-      <div class="setting"><div class="label">Exposure</div><div class="value" id="recEV">−0.3</div><div class="sub" id="recEVSub">protect highlights</div></div>
+      <div class="setting"><div class="label">Exposure</div><div class="value" id="recEV">−0.3</div><div class="sub">protect highlights</div></div>
     </div>
     <div class="why" id="recWhy"><strong>WHY</strong> — FRAME balances motion, depth, light and your profile preferences.</div>
   </div>
@@ -521,57 +532,30 @@ button:active, .profile-card:active {
 <section id="gear" class="screen">
   <div class="top"><button class="back" onclick="show('settings')">← Back</button><div class="kicker">GEAR</div></div>
   <h1>Your gear.</h1>
-  <p>Verified gear helps FRAME make technically accurate recommendations.</p>
+  <p>Camera and lens are selected separately. FRAME only uses verified specifications.</p>
 
   <div class="settings-section">
     <div class="kicker" style="margin-bottom:8px">CAMERA</div>
-    <div class="profile-card active" onclick="show('camera')">
-      <div><h3>Canon EOS R5</h3><p>Full Frame · 45 MP · IBIS</p></div><div class="chev">→</div>
-    </div>
+    <div id="cameraGearList" onclick="show('camera');renderGearSelectors()"></div>
 
-    <div class="kicker" style="margin:20px 0 8px">LENSES</div>
-    <div class="profile-card active" onclick="show('lens')">
-      <div><h3>RF 50mm F1.2 L USM</h3><p>50mm · f/1.2–f/16</p></div><div class="chev">→</div>
-    </div>
-    <button class="secondary" style="margin-top:8px" onclick="show('lens')">＋ ADD LENS</button>
+    <div class="kicker" style="margin:20px 0 8px">LENS</div>
+    <div id="lensGearList" onclick="show('lens');renderGearSelectors()"></div>
   </div>
-  <div class="note" style="margin-top:24px">FRAME only uses verified gear specifications.</div>
+  <div class="note" style="margin-top:24px">Aperture limits are hard technical boundaries.</div>
 </section>
 
 <section id="camera" class="screen">
-  <div class="top"><button class="back" onclick="show('gear')">← Back</button><div class="kicker">ADD CAMERA</div></div>
-  <h1>Identify your<br>camera.</h1>
-  <p>Search for the exact model. FRAME will use verified specifications.</p>
-
-  <div class="setting" style="margin-top:24px">
-    <div class="label">CAMERA MODEL</div>
-    <input id="cameraSearch" value="" placeholder="e.g. Canon EOS R5" style="width:100%;border:0;outline:0;background:transparent;color:var(--text);font-size:17px;padding:4px 0">
-  </div>
-
-  <div class="profile-card active" style="margin-top:10px" onclick="confirmCamera()" aria-label="Verified camera match">
-    <div><h3>Canon EOS R5</h3><p>Full Frame · 45 MP · IBIS</p></div><div class="chev">✓</div>
-  </div>
-  <div class="note">Verified match · Example result</div>
-
-  <button class="primary" style="margin-top:24px" onclick="confirmCamera()">CONFIRM CAMERA</button>
+  <div class="top"><button class="back" onclick="show('gear')">← Back</button><div class="kicker">CAMERA</div></div>
+  <h1>Select your<br>camera.</h1>
+  <p>Choose an exact verified model.</p>
+  <div id="cameraSelectList" class="settings-section"></div>
 </section>
 
 <section id="lens" class="screen">
-  <div class="top"><button class="back" onclick="show('gear')">← Back</button><div class="kicker">ADD LENS</div></div>
-  <h1>Identify your<br>lens.</h1>
-  <p>Search for the exact model. FRAME will use verified specifications.</p>
-
-  <div class="setting" style="margin-top:24px">
-    <div class="label">LENS MODEL</div>
-    <input id="lensSearch" value="" placeholder="e.g. RF 50mm F1.2 L USM" style="width:100%;border:0;outline:0;background:transparent;color:var(--text);font-size:17px;padding:4px 0">
-  </div>
-
-  <div class="profile-card active" style="margin-top:10px" onclick="confirmLens()" aria-label="Verified lens match">
-    <div><h3>Canon RF 50mm F1.2 L USM</h3><p>50mm · f/1.2–f/16 · RF Mount</p></div><div class="chev">✓</div>
-  </div>
-  <div class="note">Verified match · Example result</div>
-
-  <button class="primary" style="margin-top:24px" onclick="confirmLens()">CONFIRM LENS</button>
+  <div class="top"><button class="back" onclick="show('gear')">← Back</button><div class="kicker">LENS</div></div>
+  <h1>Select your<br>lens.</h1>
+  <p>Only lenses compatible with the selected camera are shown.</p>
+  <div id="lensSelectList" class="settings-section"></div>
 </section>
 
 <section id="engineTest" class="screen">
@@ -597,6 +581,25 @@ button:active, .profile-card:active {
   <div class="test-summary" id="testSummary">10 scenes · 4 profiles · 40 combinations</div>
 </section>
 
+<section id="feedback" class="screen">
+  <div class="top"><button class="back" onclick="show('settings')">← Back</button><div class="kicker">FEEDBACK</div></div>
+  <h1>Help improve<br>FRAME.</h1>
+  <p>Send a note directly to the developer. FRAME adds the relevant app context automatically.</p>
+  <div class="settings-section">
+    <div class="setting"><div class="label">CATEGORY</div>
+      <select id="feedbackCategory" style="width:100%;border:0;outline:0;background:transparent;color:var(--text);font-size:17px;padding:4px 0">
+        <option>Engine decision</option><option>AI scene understanding</option><option>Gear / compatibility</option><option>Live View</option><option>UI / UX</option><option>Bug</option><option>Other</option>
+      </select>
+    </div>
+    <div class="setting" style="margin-top:10px"><div class="label">MESSAGE</div>
+      <textarea id="feedbackText" rows="6" placeholder="What happened? What would you change?" style="width:100%;border:0;outline:0;resize:none;background:transparent;color:var(--text);font:inherit;line-height:1.4"></textarea>
+    </div>
+  </div>
+  <button class="primary" style="margin-top:16px" onclick="sendDeveloperFeedback()">SEND FEEDBACK</button>
+  <div class="note" id="feedbackStatus" style="margin-top:12px"></div>
+  <div class="note">No image is attached to developer feedback.</div>
+</section>
+
 <section id="settings" class="screen">
   <div class="top"><button class="back" onclick="show('home')">← Back</button><div class="kicker">SETTINGS</div></div>
   <h1>Settings</h1>
@@ -614,7 +617,8 @@ button:active, .profile-card:active {
         <button id="hapticsOff" onclick="setHaptics(false)">OFF</button>
       </div>
     </div>
-    <div class="settings-row" onclick="show('gear')" style="cursor:pointer"><strong>Gear</strong><span>Canon R5 · RF 50mm</span></div>
+    <div class="settings-row" onclick="show('gear')" style="cursor:pointer"><strong>Gear</strong><span id="settingsGearSummary">Canon R5 · RF 50mm</span></div>
+    <button class="secondary" style="margin-top:10px" onclick="show('feedback')">FEEDBACK TO DEVELOPER</button>
     <button class="secondary" style="margin-top:16px" onclick="show('engineTest');initEngineTest()">ENGINE TEST LAB</button>
   </div>
   <div class="note" style="margin-top:28px">FRAME recommends. The photographer decides.</div>
@@ -645,16 +649,6 @@ const FRAME_PROFILE_META = {
   Street: 'Environmental · Responsive · High Sharpness',
   Wildlife: 'Fast Subjects · Long Lenses · Sharpness First',
   Landscape: 'Depth · Detail · Tripod When Useful'
-};
-
-// Photographer preference layer. Higher sharpnessPriority means FRAME is more
-// willing to accept ISO/grain before risking motion blur. This is a preference,
-// not a hard rule, and will later become editable in profile setup.
-const FRAME_PROFILE_PREFS = {
-  Portrait: 0.82,
-  Street: 0.92,
-  Wildlife: 1.00,
-  Landscape: 0.55
 };
 
 function updateHomeSetup(profile){
@@ -783,9 +777,7 @@ async function analyzeSceneWithAI(){
   const response=await fetch(FRAME_API_URL,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      image:capturedImage
-    })
+    body:JSON.stringify({ image:capturedImage })
   });
   const data=await response.json();
   if(!response.ok) throw new Error(data.error || 'AI analysis failed');
@@ -797,70 +789,28 @@ function aiRecommendation(scene, profile){
   const movement = scene.movement;
   const light = scene.light_level;
   const depth = scene.depth;
-  const sharpnessPriority = FRAME_PROFILE_PREFS[profile] ?? 0.75;
-  let aperture='f/2.8', shutter='1/250', iso='100', wb='5200K', ev='0 EV', title='BALANCE';
+  const lens=selectedLens();
+  let aperture='f/2.8', shutter='1/250', iso='100', wb='5200K', ev='−0.3 EV', title='BALANCE';
 
   // Deterministic FRAME rules: AI describes the scene; this layer chooses settings.
-  // The profile preference influences the trade-off between motion blur and ISO.
   if(movement==='Very High'){ shutter='1/1600'; title='FREEZE'; }
   else if(movement==='High'){ shutter='1/1000'; title='FREEZE'; }
   else if(movement==='Medium'){ shutter='1/500'; }
-  else if(movement==='Low'){
-    // High-sharpness profiles prefer a safer handheld shutter.
-    shutter = sharpnessPriority >= 0.85 ? '1/125' : '1/100';
-  }
-  else {
-    shutter = sharpnessPriority >= 0.80 ? '1/60' : '1/80';
-  }
+  else if(movement==='Low'){ shutter='1/200'; }
+  else { shutter='1/80'; }
 
-  if(depth==='Shallow') aperture='f/1.2';
-  else if(depth==='Deep') aperture=profile==='Landscape' ? 'f/8' : 'f/4';
+  if(depth==='Shallow') aperture=`f/${lens.maxAperture}`;
+  else if(depth==='Deep') aperture=profile==='Landscape' ? 'f/8' : 'f/5.6';
   else aperture=profile==='Street' ? 'f/3.2' : 'f/2.8';
 
-  // Low-light calibration: preserve sharpness by opening the lens before
-  // accepting a slower shutter, then accept ISO/grain when needed. This is
-  // preference-driven rather than a fixed "low light = ISO X" rule.
-  if((light==='Very Low' || light==='Low') && (movement==='None' || movement==='Low')){
-    if(profile==='Portrait'){
-      aperture = sharpnessPriority >= 0.80 ? 'f/2.0' : 'f/2.8';
-      shutter = sharpnessPriority >= 0.80 ? '1/60' : '1/80';
-      iso = light==='Very Low'
-        ? (sharpnessPriority >= 0.80 ? '3200' : '1600')
-        : (sharpnessPriority >= 0.80 ? '1600' : '800');
-    } else if(profile==='Landscape'){
-      aperture='f/4';
-      shutter='1/15';
-      iso=light==='Very Low' ? '800' : '400';
-    } else if(profile==='Street'){
-      aperture='f/2.8';
-      shutter='1/125';
-      iso=light==='Very Low' ? '3200' : '1600';
-    } else {
-      aperture='f/4';
-      shutter='1/30';
-      iso=light==='Very Low' ? '1600' : '800';
-    }
-    title='HOLD DETAIL';
-  } else if(light==='Very Low'){
-    iso = movement==='None' ? '400' : movement==='Low' ? '800' : '1600';
-    title='PROTECT';
-  }
-  else if(light==='Low'){
-    iso = movement==='None' ? '200' : movement==='Low' ? '400' : '800';
-  }
-  else if(light==='Medium'){
-    iso = movement==='None' ? '100' : movement==='Low' ? '200' : movement==='Medium' ? '400' : '640';
-  }
+  if(light==='Very Low'){ iso = movement==='None' ? '800' : movement==='Low' ? '1600' : '3200'; title='PROTECT'; }
+  else if(light==='Low'){ iso = movement==='None' ? '400' : movement==='Low' ? '800' : '1600'; }
+  else if(light==='Medium'){ iso = movement==='None' ? '100' : movement==='Low' ? '200' : movement==='Medium' ? '400' : '640'; }
   else if(light==='High' || light==='Very High'){ iso='100'; }
 
-  // In genuinely low light, negative exposure compensation is not a default.
-  if(light==='Very Low' || light==='Low') ev='0 EV';
-
-  // Avoid false Kelvin precision indoors or under mixed practical sources.
-  if((scene.environment==='Indoor' || scene.environment==='indoor') && (light==='Low' || light==='Very Low')) wb='AUTO';
-  else if(scene.color_temperature==='Mixed') wb='AUTO';
-  else if(scene.color_temperature==='Warm') wb='AUTO';
+  if(scene.color_temperature==='Warm') wb='5600K';
   else if(scene.color_temperature==='Cool') wb='4000K';
+  else if(scene.color_temperature==='Mixed') wb='AUTO';
 
   if(depth==='Shallow'){ title='ISOLATE'; }
   if(depth==='Deep'){ title='HOLD DETAIL'; }
@@ -869,36 +819,21 @@ function aiRecommendation(scene, profile){
 
   const why = movement==='High' || movement==='Very High'
     ? 'Movement is the dominant constraint, so shutter speed leads the decision.'
-    : (light==='Low' || light==='Very Low') && (movement==='Low' || movement==='None')
-      ? (sharpnessPriority >= 0.80
-        ? 'Low light favors a safe handheld shutter, a wider aperture and accepting ISO before risking motion blur.'
-        : 'Low light favors balancing handheld shutter speed, aperture and ISO.')
-      : depth==='Shallow'
-        ? 'Depth of field is central to the visual intent, so aperture leads the decision.'
-        : light==='Very Low'
-          ? 'Low light requires a balance between shutter speed, aperture and ISO.'
-          : 'FRAME balances what it sees with your profile preferences and verified gear.';
+    : depth==='Shallow'
+      ? 'Depth of field is central to the visual intent, so aperture leads the decision.'
+      : light==='Very Low'
+        ? 'Low light requires a balance between shutter speed, aperture and ISO.'
+        : 'FRAME balances what it sees with your profile preferences and verified gear.';
 
-  // Creative Alternative deliberately changes the visual trade-off while
-  // staying inside verified gear. For low-light Portrait, the alternative
-  // trades depth for lower ISO without slowing the shutter.
   const creative={
-    lens:'50mm',
-    aperture: (light==='Low' || light==='Very Low') && profile==='Portrait'
-      ? (aperture==='f/2.0' ? 'f/1.2' : 'f/2.0')
-      : (light==='Low' || light==='Very Low') && depth!=='Shallow' ? 'f/2.0'
-      : depth==='Shallow' ? 'f/2.0'
-      : aperture==='f/8' ? 'f/5.6' : aperture,
+    lens:formatLensRange(lens),
+    aperture: depth==='Shallow' ? 'f/2.0' : (aperture==='f/8' ? 'f/5.6' : aperture),
     shutter: movement==='Very High' ? '1/1000' : movement==='High' ? '1/500' : shutter,
-    iso: (light==='Low' || light==='Very Low') && profile==='Portrait'
-      ? (aperture==='f/2.0' ? (light==='Very Low' ? '1600' : '800') : (light==='Very Low' ? '800' : '400'))
-      : (light==='Low' || light==='Very Low') && depth!=='Shallow'
-        ? Math.max(100, Math.round(Number(iso)/2))
-        : movement==='High' || movement==='Very High' ? (iso==='100'?'400':iso) : iso,
+    iso: movement==='High' || movement==='Very High' ? (iso==='100'?'400':iso) : iso,
     wb, ev
   };
 
-  return {lens:'50mm',aperture,shutter,iso,wb,ev,title,why,creative};
+  return validateRecommendation({lens:formatLensRange(lens),aperture,shutter,iso,wb,ev,title,why,creative});
 }
 
 function applyAIRecommendation(scene){
@@ -911,8 +846,6 @@ function applyAIRecommendation(scene){
   document.getElementById('recISO').textContent=values.iso;
   document.getElementById('recWB').textContent=values.wb;
   document.getElementById('recEV').textContent=values.ev.replace(' EV','');
-  const evSub=document.getElementById('recEVSub');
-  if(evSub) evSub.textContent=values.ev==='0 EV' ? 'neutral starting point' : 'protect highlights';
   document.getElementById('recommendationTitle').textContent=values.title;
   document.getElementById('recommendationSummary').textContent=`${scene.subject} · ${scene.environment} · ${scene.light_level} light · ${scene.movement} movement.`;
   document.getElementById('recContext').textContent=`${profile.toUpperCase()} · AI SCENE · ${scene.confidence.toUpperCase()} CONFIDENCE`;
@@ -942,6 +875,9 @@ function loadSavedSettings(){
 }
 
 loadSavedSettings();
+renderGear();
+renderGearSelectors();
+try{ if(screen.orientation?.lock) screen.orientation.lock('portrait').catch(()=>{}); }catch(e){}
 </script>
 
 
@@ -974,19 +910,72 @@ const FRAME_ENGINE = {
     values:{Portrait:{lens:"200mm",aperture:"f/4",shutter:"1/1600",iso:"800",wb:"5600K",ev:"−0.3 EV"},Street:{lens:"200mm",aperture:"f/5.6",shutter:"1/2000",iso:"1250",wb:"5600K",ev:"−0.3 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/2000",iso:"1600",wb:"5600K",ev:"−0.3 EV"},Landscape:{lens:"200mm",aperture:"f/5.6",shutter:"1/1000",iso:"800",wb:"5600K",ev:"−0.3 EV"}}},
   landscape_golden:{subject:"Landscape",movement:"None",light:"Medium",environment:"Open",depth:"Deep",
     values:{Portrait:{lens:"50mm",aperture:"f/5.6",shutter:"1/250",iso:"100",wb:"5200K",ev:"−0.7 EV"},Street:{lens:"35mm",aperture:"f/5.6",shutter:"1/250",iso:"100",wb:"5200K",ev:"−0.7 EV"},Wildlife:{lens:"200mm",aperture:"f/5.6",shutter:"1/500",iso:"200",wb:"5200K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/8",shutter:"1/80",iso:"100",wb:"5200K",ev:"−0.7 EV"}}},
-  lowlight_interior:{subject:"Interior",movement:"None",light:"Low",environment:"Indoor",depth:"Deep",
-    values:{Portrait:{lens:"50mm",aperture:"f/2.8",shutter:"1/60",iso:"800",wb:"AUTO",ev:"0 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"1600",wb:"AUTO",ev:"0 EV"},Wildlife:{lens:"50mm",aperture:"f/4",shutter:"1/250",iso:"3200",wb:"AUTO",ev:"0 EV"},Landscape:{lens:"50mm",aperture:"f/5.6",shutter:"1/15",iso:"400",wb:"AUTO",ev:"0 EV"}}},
   night_street:{subject:"Street",movement:"Medium",light:"Very Low",environment:"Urban",depth:"Medium",
     values:{Portrait:{lens:"50mm",aperture:"f/1.8",shutter:"1/125",iso:"1600",wb:"3200K",ev:"−0.7 EV"},Street:{lens:"50mm",aperture:"f/2.8",shutter:"1/125",iso:"3200",wb:"3200K",ev:"−0.7 EV"},Wildlife:{lens:"200mm",aperture:"f/4",shutter:"1/500",iso:"6400",wb:"3200K",ev:"−0.7 EV"},Landscape:{lens:"24mm",aperture:"f/2.8",shutter:"1/15",iso:"1600",wb:"3200K",ev:"−0.7 EV"}}}
 };
 
+const FRAME_GEAR_DB={
+  cameras:{
+    canon_r5:{id:'canon_r5',brand:'Canon',name:'Canon EOS R5',sensor:'Full Frame',megapixels:45,mount:'RF',ibis:true,verified:true,verifiedSource:'Canon'},
+    sony_a7iv:{id:'sony_a7iv',brand:'Sony',name:'Sony α7 IV',sensor:'Full Frame',megapixels:33,mount:'E',ibis:true,verified:true,verifiedSource:'Sony'},
+    nikon_z8:{id:'nikon_z8',brand:'Nikon',name:'Nikon Z8',sensor:'Full Frame',megapixels:45.7,mount:'Z',ibis:true,verified:true,verifiedSource:'Nikon'},
+    fuji_xt5:{id:'fuji_xt5',brand:'Fujifilm',name:'FUJIFILM X-T5',sensor:'APS-C',megapixels:40.2,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'}
+  },
+  lenses:{
+    canon_rf50:{id:'canon_rf50',brand:'Canon',name:'RF 50mm F1.2 L USM',mount:'RF',focalMin:50,focalMax:50,maxAperture:1.2,minAperture:16,stabilization:false,verified:true},
+    canon_rf2470:{id:'canon_rf2470',brand:'Canon',name:'RF 24-70mm F2.8 L IS USM',mount:'RF',focalMin:24,focalMax:70,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
+    canon_rf100500:{id:'canon_rf100500',brand:'Canon',name:'RF 100-500mm F4.5-7.1 L IS USM',mount:'RF',focalMin:100,focalMax:500,maxAperture:4.5,minAperture:32,stabilization:true,verified:true},
+    sony_fe50:{id:'sony_fe50',brand:'Sony',name:'FE 50mm F1.2 GM',mount:'E',focalMin:50,focalMax:50,maxAperture:1.2,minAperture:16,stabilization:false,verified:true},
+    sony_fe2470:{id:'sony_fe2470',brand:'Sony',name:'FE 24-70mm F2.8 GM II',mount:'E',focalMin:24,focalMax:70,maxAperture:2.8,minAperture:22,stabilization:false,verified:true},
+    sony_fe200600:{id:'sony_fe200600',brand:'Sony',name:'FE 200-600mm F5.6-6.3 G OSS',mount:'E',focalMin:200,focalMax:600,maxAperture:5.6,minAperture:36,stabilization:true,verified:true},
+    nikon_z50:{id:'nikon_z50',brand:'Nikon',name:'NIKKOR Z 50mm f/1.2 S',mount:'Z',focalMin:50,focalMax:50,maxAperture:1.2,minAperture:16,stabilization:false,verified:true},
+    nikon_z2470:{id:'nikon_z2470',brand:'Nikon',name:'NIKKOR Z 24-70mm f/2.8 S',mount:'Z',focalMin:24,focalMax:70,maxAperture:2.8,minAperture:22,stabilization:false,verified:true},
+    nikon_z100400:{id:'nikon_z100400',brand:'Nikon',name:'NIKKOR Z 100-400mm f/4.5-5.6 VR S',mount:'Z',focalMin:100,focalMax:400,maxAperture:4.5,minAperture:32,stabilization:true,verified:true},
+    fuji_xf33:{id:'fuji_xf33',brand:'Fujifilm',name:'FUJINON XF33mmF1.4 R LM WR',mount:'X',focalMin:33,focalMax:33,maxAperture:1.4,minAperture:16,stabilization:false,verified:true},
+    fuji_xf1680:{id:'fuji_xf1680',brand:'Fujifilm',name:'FUJINON XF16-80mmF4 R OIS WR',mount:'X',focalMin:16,focalMax:80,maxAperture:4,minAperture:22,stabilization:true,verified:true}
+  }
+};
+function selectedCameraId(){return localStorage.getItem('frameCamera')||'canon_r5';}
+function selectedLensId(){return localStorage.getItem('frameLens')||'canon_rf50';}
+function selectedCamera(){return FRAME_GEAR_DB.cameras[selectedCameraId()]||FRAME_GEAR_DB.cameras.canon_r5;}
+function selectedLens(){return FRAME_GEAR_DB.lenses[selectedLensId()]||FRAME_GEAR_DB.lenses.canon_rf50;}
+function compatibleLenses(){const cam=selectedCamera();return Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.mount===cam.mount&&l.verified);}
+function formatLensRange(l){return l.focalMin===l.focalMax?`${l.focalMin}mm`:`${l.focalMin}–${l.focalMax}mm`}
+function renderGear(){
+  const cam=selectedCamera(), lens=selectedLens();
+  document.getElementById('activeCameraName').textContent=cam.name;
+  document.getElementById('activeLensName').textContent=lens.name;
+  document.getElementById('settingsGearSummary').textContent=`${cam.name.replace('Canon EOS ','').replace('Sony α','Sony α').replace('FUJIFILM ','')} · ${formatLensRange(lens)}`;
+  document.getElementById('cameraGearList').innerHTML=`<div class="profile-card active gear-card"><div><h3>${cam.name}</h3><p>${cam.sensor} · ${cam.megapixels} MP · ${cam.ibis?'IBIS':'No IBIS'}</p></div><div class="chev">✓</div></div>`;
+  document.getElementById('lensGearList').innerHTML=`<div class="profile-card active gear-card"><div><h3>${lens.name}</h3><p>${formatLensRange(lens)} · f/${lens.maxAperture}–f/${lens.minAperture}</p></div><div class="chev">✓</div></div>`;
+}
+function renderGearSelectors(){
+  const cams=Object.values(FRAME_GEAR_DB.cameras); const camId=selectedCameraId();
+  document.getElementById('cameraSelectList').innerHTML=cams.map(c=>`<div class="profile-card gear-card ${c.id===camId?'gear-selected':''}" onclick="selectCamera('${c.id}')"><div><h3>${c.name}</h3><p>${c.sensor} · ${c.megapixels} MP · ${c.mount} Mount</p></div><div class="chev">${c.id===camId?'✓':'→'}</div></div>`).join('');
+  const lensId=selectedLensId();
+  document.getElementById('lensSelectList').innerHTML=compatibleLenses().map(l=>`<div class="profile-card gear-card ${l.id===lensId?'gear-selected':''}" onclick="selectLens('${l.id}')"><div><h3>${l.name}</h3><p>${formatLensRange(l)} · f/${l.maxAperture}–f/${l.minAperture}${l.stabilization?' · IS/OSS/VR':''}</p></div><div class="chev">${l.id===lensId?'✓':'→'}</div></div>`).join('');
+}
+function selectCamera(id){localStorage.setItem('frameCamera',id);const lenses=Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.mount===FRAME_GEAR_DB.cameras[id].mount);if(!lenses.some(l=>l.id===selectedLensId())) localStorage.setItem('frameLens',lenses[0].id);renderGear();renderGearSelectors();show('gear');}
+function selectLens(id){if(!FRAME_GEAR_DB.lenses[id])return;localStorage.setItem('frameLens',id);renderGear();renderGearSelectors();show('gear');}
+function validateAperture(aperture,lens){
+  const m=String(aperture).match(/f\/?([0-9.]+)/i); if(!m) return aperture;
+  const n=Number(m[1]); const clamped=Math.min(Math.max(n,lens.maxAperture),lens.minAperture);
+  return `f/${Number(clamped.toFixed(1)).toString()}`;
+}
+function validateRecommendation(values){
+  const lens=selectedLens();
+  const safe={...values,lens:formatLensRange(lens)};
+  safe.aperture=validateAperture(values.aperture,lens);
+  if(safe.creative) safe.creative={...safe.creative,lens:formatLensRange(lens),aperture:validateAperture(safe.creative.aperture,lens)};
+  return safe;
+}
 function currentProfile(){ return localStorage.getItem('frameProfile') || 'Portrait'; }
 function currentScene(){ return document.getElementById('demoScene')?.value || 'golden_portrait'; }
 
 const SCENE_LABELS={
   golden_portrait:'Golden Hour Portrait', midday_portrait:'Hard Midday Portrait', window_portrait:'Window Portrait',
   lowlight_portrait:'Low Light Portrait', after_sunset:'After Sunset Portrait', city_portrait:'Environmental City Portrait',
-  moving_street:'Moving Street Subject', bird_flight:'Bird in Flight', landscape_golden:'Landscape Golden Hour', night_street:'Night Street', lowlight_interior:'Low Light Interior'
+  moving_street:'Moving Street Subject', bird_flight:'Bird in Flight', landscape_golden:'Landscape Golden Hour', night_street:'Night Street'
 };
 
 function creativeAlternative(values,scene){
@@ -1008,15 +997,12 @@ function creativeAlternative(values,scene){
   return alt;
 }
 
-function applyEngineRecommendation(source='FALLBACK'){
+function applyEngineRecommendation(){
   const sceneKey=currentScene();
   const scene=FRAME_ENGINE[sceneKey] || FRAME_ENGINE.golden_portrait;
   const profile=currentProfile();
-  const rawValues=scene.values[profile] || scene.values.Portrait;
-  // Hard gear boundary: this demo has only a verified 50mm lens. Never recommend unavailable focal lengths.
-  const values={...rawValues,lens:FRAME_GEAR.lens.includes('50mm')?'50mm':rawValues.lens};
-  const rawCreative=creativeAlternative(rawValues,scene);
-  const creative={...rawCreative,lens:FRAME_GEAR.lens.includes('50mm')?'50mm':rawCreative.lens};
+  const values=scene.values[profile] || scene.values.Portrait;
+  const creative=creativeAlternative(values,scene);
 
   window.frameDemoRecommendation={sceneKey,scene,profile,values,creative};
 
@@ -1026,8 +1012,6 @@ function applyEngineRecommendation(source='FALLBACK'){
   document.getElementById('recISO').textContent=values.iso;
   document.getElementById('recWB').textContent=values.wb;
   document.getElementById('recEV').textContent=values.ev.replace(' EV','');
-  const evSub=document.getElementById('recEVSub');
-  if(evSub) evSub.textContent=values.ev==='0 EV' ? 'neutral starting point' : 'protect highlights';
 
   const title=document.getElementById('recommendationTitle');
   const summary=document.getElementById('recommendationSummary');
@@ -1070,7 +1054,7 @@ function applyEngineRecommendation(source='FALLBACK'){
     ? 'A more expressive option that allows controlled movement instead of freezing everything.'
     : 'A creative alternative that changes depth, motion or visual character while staying within your gear.';
 
-  if(context) context.textContent=`${profile.toUpperCase()} · ${source==='AI' ? 'AI SCENE' : 'FALLBACK · '+(SCENE_LABELS[sceneKey] || sceneKey)}`;
+  if(context) context.textContent=`${profile.toUpperCase()} · ${SCENE_LABELS[sceneKey] || sceneKey}`;
 }
 
 window.addEventListener('load',()=>{
@@ -1116,6 +1100,25 @@ function runAllEngineTests(){
 }
 </script>
 
+
+<script>
+async function sendDeveloperFeedback(){
+  const text=document.getElementById('feedbackText').value.trim();
+  const category=document.getElementById('feedbackCategory').value;
+  const status=document.getElementById('feedbackStatus');
+  if(!text){status.textContent='Please add a message.';status.className='note feedback-status-error';return;}
+  const rec=window.frameDemoRecommendation||{};
+  const context={version:'pre-beta',screen:document.querySelector('.screen.active')?.id||'unknown',test:document.getElementById('testScene')?.value||null,profile:currentProfile(),camera:selectedCamera().name,lens:selectedLens().name,timestamp:new Date().toISOString()};
+  status.textContent='SENDING…';status.className='note';
+  try{
+    const r=await fetch('https://frame-api-khaki.vercel.app/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({category,message:text,context})});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||'Feedback failed');
+    status.textContent='Feedback sent. Thank you.';status.className='note feedback-status-success';document.getElementById('feedbackText').value='';
+  }catch(e){status.textContent='Could not send feedback. Please try again later.';status.className='note feedback-status-error';console.warn(e);}
+}
+</script>
+
 <script>
 /* FRAME Demo 0.2 — haptic feedback layer.
    Uses the platform vibration API when available. iOS Safari/PWA currently
@@ -1142,5 +1145,6 @@ document.addEventListener('click', (event)=>{
 });
 </script>
 
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}</script>
 </body>
 </html>
