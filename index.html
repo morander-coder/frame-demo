@@ -666,7 +666,8 @@ function selectProfile(el,name){
   const chev=el.querySelector('.chev');
   if(chev) chev.textContent='✓';
   updateHomeSetup(name);
-  document.getElementById('cameraProfile').textContent=name.toUpperCase();
+  const cameraProfile=document.getElementById('cameraProfile');
+  if(cameraProfile) cameraProfile.textContent=name.toUpperCase();
   localStorage.setItem('frameProfile', name);
   setTimeout(()=>show('home'),300);
 }
@@ -865,7 +866,8 @@ function loadSavedSettings(){
   });
 
   updateHomeSetup(savedProfile);
-  document.getElementById('cameraProfile').textContent = savedProfile.toUpperCase();
+  const cameraProfile=document.getElementById('cameraProfile');
+  if(cameraProfile) cameraProfile.textContent = savedProfile.toUpperCase();
 }
 
 try{ if(screen.orientation?.lock) screen.orientation.lock('portrait').catch(()=>{}); }catch(e){}
