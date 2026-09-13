@@ -875,8 +875,6 @@ function loadSavedSettings(){
 }
 
 loadSavedSettings();
-renderGear();
-renderGearSelectors();
 try{ if(screen.orientation?.lock) screen.orientation.lock('portrait').catch(()=>{}); }catch(e){}
 </script>
 
@@ -957,6 +955,9 @@ function renderGearSelectors(){
 }
 function selectCamera(id){localStorage.setItem('frameCamera',id);const lenses=Object.values(FRAME_GEAR_DB.lenses).filter(l=>l.mount===FRAME_GEAR_DB.cameras[id].mount);if(!lenses.some(l=>l.id===selectedLensId())) localStorage.setItem('frameLens',lenses[0].id);renderGear();renderGearSelectors();show('gear');}
 function selectLens(id){if(!FRAME_GEAR_DB.lenses[id])return;localStorage.setItem('frameLens',id);renderGear();renderGearSelectors();show('gear');}
+renderGear();
+renderGearSelectors();
+
 function validateAperture(aperture,lens){
   const m=String(aperture).match(/f\/?([0-9.]+)/i); if(!m) return aperture;
   const n=Number(m[1]); const clamped=Math.min(Math.max(n,lens.maxAperture),lens.minAperture);
