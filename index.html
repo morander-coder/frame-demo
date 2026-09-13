@@ -1028,7 +1028,7 @@ function renderLensBrands(){
   document.getElementById('lensSelectorKicker').textContent='LENS';
   document.getElementById('lensSelectorTitle').textContent='Choose a brand.';
   document.getElementById('lensSelectorDescription').textContent='Select your lens brand.';
-  document.getElementById('lensSelectList').innerHTML=gearBrandMenu(compatibleLenses(),'lens');
+  document.getElementById('lensSelectList').innerHTML=gearBrandMenu(Object.values(FRAME_GEAR_DB.lenses),'lens');
 }
 
 function renderLensModels(brand){
