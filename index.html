@@ -415,6 +415,15 @@ html,body{width:100%;height:100%;overflow:hidden}
 }
 .gear-native-select:focus{border-color:var(--accent)}
 .gear-native-select option{background:var(--surface);color:var(--text)}
+.gear-drill-list{display:flex;flex-direction:column;margin-top:14px;border-top:1px solid var(--line);background:var(--surface);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.gear-drill-item{width:100%;min-height:62px;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);font:inherit;display:flex;align-items:center;justify-content:space-between;text-align:left;cursor:pointer}
+.gear-drill-item:last-child{border-bottom:0}
+.gear-drill-item.selected{background:var(--accent-soft)}
+.gear-drill-main{display:flex;flex-direction:column;gap:4px;min-width:0}
+.gear-drill-main strong{font-size:15px;font-weight:600;line-height:1.2}
+.gear-drill-main small{font-size:10px;color:var(--muted);line-height:1.3}
+.gear-drill-mark{font-size:20px;color:var(--muted);line-height:1;margin-left:14px}
+.gear-drill-item.selected .gear-drill-mark{color:var(--accent)}
 .gear-models{display:grid;gap:8px}
 .gear-model{padding:13px 15px}
 .gear-model h3{margin:0 0 4px;font-size:15px;font-weight:600}
@@ -1027,16 +1036,16 @@ function renderCameraBrands(){
 
 function renderCameraModels(brand){
   cameraSelectorBrand=brand;
-  document.getElementById('cameraSelectorKicker').textContent=brand.toUpperCase();
+  document.getElementById('cameraSelectorKicker').textContent='CAMERA';
   document.getElementById('cameraSelectorTitle').textContent='Choose your camera.';
-  document.getElementById('cameraSelectorDescription').textContent='Select an exact verified model.';
+  document.getElementById('cameraSelectorDescription').textContent=`${brand} · Select an exact verified model.`;
   const camId=selectedCameraId();
   const cams=Object.values(FRAME_GEAR_DB.cameras).filter(c=>c.verified&&c.brand===brand);
-  document.getElementById('cameraSelectList').innerHTML=`<div class="gear-native-select-wrap">
-    <select class="gear-native-select gear-model-select" aria-label="${brand} camera model" onchange="if(this.value)selectCamera(this.value)">
-      <option value="" ${camId&&cams.some(c=>c.id===camId)?'':'selected'}>${cams.some(c=>c.id===camId)?cams.find(c=>c.id===camId).name:'Camera model'}</option>
-      ${cams.filter(c=>c.id!==camId).map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
-    </select>
+  document.getElementById('cameraSelectList').innerHTML=`<div class="gear-drill-list">
+    ${cams.map(c=>`<button class="gear-drill-item ${c.id===camId?'selected':''}" type="button" onclick="selectCamera('${c.id}')">
+      <span class="gear-drill-main"><strong>${c.name}</strong><small>${c.sensor} · ${c.megapixels} MP · ${c.mount==='fixed'?'Fixed lens':c.mount+' Mount'}${c.ibis?' · IBIS':''}</small></span>
+      <span class="gear-drill-mark">${c.id===camId?'✓':'›'}</span>
+    </button>`).join('')}
   </div>`;
 }
 
@@ -1050,16 +1059,16 @@ function renderLensBrands(){
 
 function renderLensModels(brand){
   lensSelectorBrand=brand;
-  document.getElementById('lensSelectorKicker').textContent=brand.toUpperCase();
+  document.getElementById('lensSelectorKicker').textContent='LENS';
   document.getElementById('lensSelectorTitle').textContent='Choose your lens.';
-  document.getElementById('lensSelectorDescription').textContent='Only lenses compatible with your camera are shown.';
+  document.getElementById('lensSelectorDescription').textContent=`${brand} · Only lenses compatible with your camera are shown.`;
   const lensId=selectedLensId();
   const lenses=compatibleLenses().filter(l=>l.brand===brand);
-  document.getElementById('lensSelectList').innerHTML=`<div class="gear-native-select-wrap">
-    <select class="gear-native-select gear-model-select" aria-label="${brand} lens model" onchange="if(this.value)selectLens(this.value)">
-      <option value="" ${lensId&&lenses.some(l=>l.id===lensId)?'':'selected'}>${lenses.some(l=>l.id===lensId)?lenses.find(l=>l.id===lensId).name:'Lens model'}</option>
-      ${lenses.filter(l=>l.id!==lensId).map(l=>`<option value="${l.id}">${l.name}</option>`).join('')}
-    </select>
+  document.getElementById('lensSelectList').innerHTML=`<div class="gear-drill-list">
+    ${lenses.map(l=>`<button class="gear-drill-item ${l.id===lensId?'selected':''}" type="button" onclick="selectLens('${l.id}')">
+      <span class="gear-drill-main"><strong>${l.name}</strong><small>${formatLensRange(l)} · f/${l.maxAperture}–f/${l.minAperture}${l.fixed?' · Built-in':(l.stabilization?' · IS/OSS/VR':'')}</small></span>
+      <span class="gear-drill-mark">${l.id===lensId?'✓':'›'}</span>
+    </button>`).join('')}
   </div>`;
 }
 
