@@ -919,7 +919,7 @@ function applyAIRecommendation(scene){
   document.getElementById('recommendationTitle').textContent=values.title;
   document.getElementById('recommendationSummary').textContent=`${scene.subject} · ${scene.environment} · ${scene.light_level} light · ${scene.movement} movement.`;
   const cam=window.frameCameraSettings||{};
-document.getElementById('recContext').textContent=`CAMERA · ISO ${cam.iso??'N/A'} · EXPOSURE TIME ${cam.exposureTime??'N/A'} · EC ${cam.exposureCompensation??'N/A'} · MODE ${cam.exposureMode??'N/A'}`;
+document.getElementById('recContext').textContent=`PHOTO SETTINGS · ${JSON.stringify(window.framePhotoSettings||{})}`;
   document.getElementById('recWhy').innerHTML=`<strong>WHY</strong> — ${values.why}`;
   document.getElementById('altKicker').textContent=(scene.movement==='High'||scene.movement==='Very High')?'MOTION':'LOOK';
   document.getElementById('altSettings').textContent=`${values.creative.lens} · ${values.creative.aperture} · ${values.creative.shutter} · ISO ${values.creative.iso}`;
