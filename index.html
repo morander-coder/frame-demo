@@ -784,10 +784,37 @@ window.frameCameraSettings=settings;
 
   return true;
 }
+async function readCameraPhotoSettings(){
+  const track=cameraStream?.getVideoTracks()[0];
 
+  if(!track || typeof ImageCapture==='undefined'){
+    window.framePhotoSettings={available:false};
+    return;
+  }
+
+  try{
+    const imageCapture=new ImageCapture(track);
+    const settings=await imageCapture.getPhotoSettings();
+
+    window.framePhotoSettings={
+      available:true,
+      ...settings
+    };
+
+    console.log('FRAME PHOTO SETTINGS',window.framePhotoSettings);
+  }catch(error){
+    window.framePhotoSettings={
+      available:true,
+      error:error.name || String(error)
+    };
+
+    console.warn('FRAME PHOTO SETTINGS FAILED',error);
+  }
+}
 async function analyze(){
   if(!captureFrame()) return;
-  stopCamera();
+  await readCameraPhotoSettings();
+stopCamera();
   show('loading');
   setAIStatus('READING THE SCENE');
   try{
