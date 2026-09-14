@@ -405,11 +405,11 @@ html,body{width:100%;height:100%;overflow:hidden}
 .gear-selector-screen .gear-selector-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:8px 2px 28px 0}
 .gear-selector-screen .gear-selector-list::-webkit-scrollbar{width:4px}
 .gear-selector-screen .gear-selector-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
-.gear-menu{display:flex;flex-direction:column;margin:14px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:11px;overflow:hidden}
-.gear-menu-item{min-height:52px;padding:0 14px;border:0;border-bottom:1px solid var(--line);background:transparent;border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
-.gear-menu-item:last-child{border-bottom:0}
-.gear-menu-item h3{margin:0;font-size:17px;font-weight:400;letter-spacing:-.02em}
-.gear-menu-item .chev{font-size:17px;color:var(--muted);line-height:1}
+.gear-menu-select{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:14px}
+.gear-menu-option{width:100%;min-height:52px;padding:0 14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);font:inherit;font-size:17px;font-weight:400;letter-spacing:-.02em;display:flex;align-items:center;justify-content:space-between;text-align:left;cursor:pointer}
+.gear-menu-option:last-child{border-bottom:0}
+.gear-menu-option:active{background:var(--surface2)}
+.gear-menu-chevron{font-size:22px;line-height:1;color:var(--muted);margin-left:14px}
 .gear-models{display:grid;gap:8px}
 .gear-model{padding:13px 15px}
 .gear-model h3{margin:0 0 4px;font-size:15px;font-weight:600}
@@ -1001,7 +1001,8 @@ function gearBrands(items){
 }
 
 function gearBrandMenu(items,type){
-  return `<div class="gear-menu">${gearBrands(items).map(brand=>`<div class="gear-menu-item" onclick="${type==='camera'?'renderCameraModels':'renderLensModels'}('${brand}')"><h3>${brand}</h3><div class="chev">→</div></div>`).join('')}</div>`;
+  const action=type==='camera'?'renderCameraModels':'renderLensModels';
+  return `<div class="gear-menu-select" role="listbox" aria-label="${type==='camera'?'Camera':'Lens'} brand">${gearBrands(items).map(brand=>`<button class="gear-menu-option" type="button" onclick="${action}('${brand}')"><span>${brand}</span><span class="gear-menu-chevron">›</span></button>`).join('')}</div>`;
 }
 
 function renderCameraBrands(){
