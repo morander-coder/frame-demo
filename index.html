@@ -405,11 +405,16 @@ html,body{width:100%;height:100%;overflow:hidden}
 .gear-selector-screen .gear-selector-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:8px 2px 28px 0}
 .gear-selector-screen .gear-selector-list::-webkit-scrollbar{width:4px}
 .gear-selector-screen .gear-selector-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
-.gear-menu-select{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:14px}
-.gear-menu-option{width:100%;min-height:52px;padding:0 14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);font:inherit;font-size:17px;font-weight:400;letter-spacing:-.02em;display:flex;align-items:center;justify-content:space-between;text-align:left;cursor:pointer}
-.gear-menu-option:last-child{border-bottom:0}
-.gear-menu-option:active{background:var(--surface2)}
-.gear-menu-chevron{font-size:22px;line-height:1;color:var(--muted);margin-left:14px}
+.gear-native-select-wrap{width:100%;margin-top:14px}
+.gear-native-select{
+  width:100%;height:54px;padding:0 42px 0 14px;
+  border:1px solid var(--line);border-radius:11px;
+  background:var(--surface);color:var(--text);
+  font:inherit;font-size:17px;font-weight:400;letter-spacing:-.02em;
+  outline:none;appearance:auto;cursor:pointer
+}
+.gear-native-select:focus{border-color:var(--accent)}
+.gear-native-select option{background:var(--surface);color:var(--text)}
 .gear-models{display:grid;gap:8px}
 .gear-model{padding:13px 15px}
 .gear-model h3{margin:0 0 4px;font-size:15px;font-weight:600}
@@ -1002,7 +1007,13 @@ function gearBrands(items){
 
 function gearBrandMenu(items,type){
   const action=type==='camera'?'renderCameraModels':'renderLensModels';
-  return `<div class="gear-menu-select" role="listbox" aria-label="${type==='camera'?'Camera':'Lens'} brand">${gearBrands(items).map(brand=>`<button class="gear-menu-option" type="button" onclick="${action}('${brand}')"><span>${brand}</span><span class="gear-menu-chevron">›</span></button>`).join('')}</div>`;
+  const label=type==='camera'?'Camera brand':'Lens brand';
+  return `<div class="gear-native-select-wrap">
+    <select class="gear-native-select" aria-label="${label}" onchange="if(this.value)${action}(this.value)">
+      <option value="" selected>${label}</option>
+      ${gearBrands(items).map(brand=>`<option value="${brand}">${brand}</option>`).join('')}
+    </select>
+  </div>`;
 }
 
 function renderCameraBrands(){
