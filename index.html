@@ -9,8 +9,6 @@
 <meta name="apple-mobile-web-app-title" content="FRAME">
 <meta name="screen-orientation" content="portrait">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FRAME</title>
 <style>
@@ -943,6 +941,7 @@ const FRAME_GEAR_DB={
     fuji_xh2:{id:'fuji_xh2',brand:'Fujifilm',name:'FUJIFILM X-H2',sensor:'APS-C',megapixels:40.2,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'},
     fuji_xs20:{id:'fuji_xs20',brand:'Fujifilm',name:'FUJIFILM X-S20',sensor:'APS-C',megapixels:26.1,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'},
     fuji_xt50:{id:'fuji_xt50',brand:'Fujifilm',name:'FUJIFILM X-T50',sensor:'APS-C',megapixels:40.2,mount:'X',ibis:true,verified:true,verifiedSource:'Fujifilm'},
+    fuji_xt30ii:{id:'fuji_xt30ii',brand:'Fujifilm',name:'FUJIFILM X-T30 II',sensor:'APS-C',megapixels:26.1,mount:'X',ibis:false,verified:true,verifiedSource:'Fujifilm'},
     fuji_x100v:{id:'fuji_x100v',brand:'Fujifilm',name:'FUJIFILM X100V',sensor:'APS-C',megapixels:26.1,mount:'fixed',ibis:false,verified:true,verifiedSource:'Fujifilm',fixedLensId:'fuji_x100v_lens'},
     fuji_x100vi:{id:'fuji_x100vi',brand:'Fujifilm',name:'FUJIFILM X100VI',sensor:'APS-C',megapixels:40.2,mount:'fixed',ibis:true,verified:true,verifiedSource:'Fujifilm',fixedLensId:'fuji_x100vi_lens'}
   },
@@ -973,6 +972,8 @@ const FRAME_GEAR_DB={
     fuji_x100v_lens:{id:'fuji_x100v_lens',brand:'Fujifilm',name:'FUJINON 23mm F2 (X100V built-in)',mount:'fixed',focalMin:23,focalMax:23,maxAperture:2,minAperture:16,stabilization:false,verified:true,fixed:true},
     fuji_x100vi_lens:{id:'fuji_x100vi_lens',brand:'Fujifilm',name:'FUJINON 23mm F2 (X100VI built-in)',mount:'fixed',focalMin:23,focalMax:23,maxAperture:2,minAperture:16,stabilization:false,verified:true,fixed:true},
     fuji_xf33:{id:'fuji_xf33',brand:'Fujifilm',name:'FUJINON XF33mmF1.4 R LM WR',mount:'X',focalMin:33,focalMax:33,maxAperture:1.4,minAperture:16,stabilization:false,verified:true},
+    fuji_xf1855:{id:'fuji_xf1855',brand:'Fujifilm',name:'FUJINON XF18-55mmF2.8-4 R LM OIS',mount:'X',focalMin:18,focalMax:55,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
+    viltrox_xf56:{id:'viltrox_xf56',brand:'Viltrox',name:'Viltrox AF 56mm F1.7 Air',mount:'X',focalMin:56,focalMax:56,maxAperture:1.7,minAperture:16,stabilization:false,verified:true},
     fuji_xf1655:{id:'fuji_xf1655',brand:'Fujifilm',name:'FUJINON XF16-55mmF2.8 R LM WR II',mount:'X',focalMin:16,focalMax:55,maxAperture:2.8,minAperture:22,stabilization:false,verified:true},
     fuji_xf1680:{id:'fuji_xf1680',brand:'Fujifilm',name:'FUJINON XF16-80mmF4 R OIS WR',mount:'X',focalMin:16,focalMax:80,maxAperture:4,minAperture:22,stabilization:true,verified:true},
     fuji_xf50140:{id:'fuji_xf50140',brand:'Fujifilm',name:'FUJINON XF50-140mmF2.8 R LM OIS WR',mount:'X',focalMin:50,focalMax:140,maxAperture:2.8,minAperture:22,stabilization:true,verified:true},
@@ -1260,3 +1261,4 @@ document.addEventListener('click', (event)=>{
 <!-- FRAME PRE-BETA BUILD 02 -->
 </body>
 </html>
+```
