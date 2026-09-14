@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="FRAME">
 <meta name="screen-orientation" content="portrait">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FRAME</title>
 <style>
@@ -386,7 +388,7 @@ button:active, .profile-card:active {
 .report-grid div{min-height:31px;border:1px solid var(--line);border-radius:6px;padding:4px;display:flex;align-items:center;justify-content:center;text-align:center}
 .report-grid .head{font-weight:700;color:var(--muted);min-height:24px}.report-grid .scene-name{justify-content:flex-start;text-align:left;color:var(--muted)}
 .report-pass{border-color:rgba(63,143,104,.55)!important}.report-warn{border-color:var(--accent)!important;color:var(--accent)}
-.report-note{font-size:9px;color:var(--muted);margin-top:10px;line-height:1.45}.report-close{position:fixed;right:18px;top:20px;z-index:2;width:auto;min-width:72px;padding:10px 14px;line-height:1;border:1px solid var(--line);background:var(--surface);border-radius:10px}
+.report-note{font-size:9px;color:var(--muted);margin-top:10px;line-height:1.45}.report-close{position:absolute;right:18px;top:20px}
 </style>
 
 <style id="frame-prebeta-architecture">
@@ -405,16 +407,10 @@ html,body{width:100%;height:100%;overflow:hidden}
 .gear-selector-screen .gear-selector-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:8px 2px 28px 0}
 .gear-selector-screen .gear-selector-list::-webkit-scrollbar{width:4px}
 .gear-selector-screen .gear-selector-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
-.gear-native-select-wrap{width:100%;margin-top:14px}
-.gear-native-select{
-  width:100%;height:54px;padding:0 42px 0 14px;
-  border:1px solid var(--line);border-radius:11px;
-  background:var(--surface);color:var(--text);
-  font:inherit;font-size:17px;font-weight:400;letter-spacing:-.02em;
-  outline:none;appearance:auto;cursor:pointer
-}
-.gear-native-select:focus{border-color:var(--accent)}
-.gear-native-select option{background:var(--surface);color:var(--text)}
+.gear-menu{display:grid;gap:8px;margin-top:2px}
+.gear-menu-item{min-height:58px;padding:15px 16px;border:1px solid var(--line);background:var(--surface);border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
+.gear-menu-item h3{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.gear-menu-item .chev{font-size:17px;color:var(--muted);line-height:1}
 .gear-models{display:grid;gap:8px}
 .gear-model{padding:13px 15px}
 .gear-model h3{margin:0 0 4px;font-size:15px;font-weight:600}
@@ -1006,71 +1002,45 @@ function gearBrands(items){
 }
 
 function gearBrandMenu(items,type){
-  const action=type==='camera'?'renderCameraModels':'renderLensModels';
-  const label=type==='camera'?'Camera brand':'Lens brand';
-  return `<div class="gear-native-select-wrap">
-    <select class="gear-native-select" aria-label="${label}" onchange="if(this.value)${action}(this.value)">
-      <option value="" selected>${label}</option>
-      ${gearBrands(items).map(brand=>`<option value="${brand}">${brand}</option>`).join('')}
-    </select>
-  </div>`;
+  return `<div class="gear-menu">${gearBrands(items).map(brand=>`<div class="gear-menu-item" onclick="${type==='camera'?'renderCameraModels':'renderLensModels'}('${brand}')"><h3>${brand}</h3><div class="chev">→</div></div>`).join('')}</div>`;
 }
 
-function renderCameraBrands(selectedBrand=null){
-  cameraSelectorBrand=selectedBrand;
+function renderCameraBrands(){
+  cameraSelectorBrand=null;
   document.getElementById('cameraSelectorKicker').textContent='CAMERA';
-  document.getElementById('cameraSelectorTitle').textContent='Choose your camera.';
-  document.getElementById('cameraSelectorDescription').textContent='Select a brand, then an exact verified model.';
+  document.getElementById('cameraSelectorTitle').textContent='Choose a brand.';
+  document.getElementById('cameraSelectorDescription').textContent='Select your camera brand.';
   const cams=Object.values(FRAME_GEAR_DB.cameras);
-  const brandOptions=gearBrands(cams).map(brand=>`<option value="${brand}" ${brand===selectedBrand?'selected':''}>${brand}</option>`).join('');
-  document.getElementById('cameraSelectList').innerHTML=`<div class="gear-native-select-wrap">
-    <select class="gear-native-select" aria-label="Camera brand" onchange="renderCameraBrands(this.value)">
-      <option value="" ${selectedBrand?'':'selected'}>Camera brand</option>
-      ${brandOptions}
-    </select>
-  </div>${selectedBrand?cameraModelSelect(selectedBrand):''}`;
+  document.getElementById('cameraSelectList').innerHTML=gearBrandMenu(cams,'camera');
 }
 
-function cameraModelSelect(brand){
+function renderCameraModels(brand){
+  cameraSelectorBrand=brand;
+  document.getElementById('cameraSelectorKicker').textContent=brand.toUpperCase();
+  document.getElementById('cameraSelectorTitle').textContent='Choose your camera.';
+  document.getElementById('cameraSelectorDescription').textContent='Select an exact verified model.';
   const camId=selectedCameraId();
   const cams=Object.values(FRAME_GEAR_DB.cameras).filter(c=>c.verified&&c.brand===brand);
-  return `<div class="gear-native-select-wrap">
-    <select class="gear-native-select gear-model-select" aria-label="${brand} camera model" onchange="if(this.value)selectCamera(this.value)">
-      <option value="" ${camId&&cams.some(c=>c.id===camId)?'':'selected'}>${cams.some(c=>c.id===camId)?cams.find(c=>c.id===camId).name:'Camera model'}</option>
-      ${cams.filter(c=>c.id!==camId).map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
-    </select>
-  </div>`;
+  document.getElementById('cameraSelectList').innerHTML=`<div class="gear-models">${cams.map(c=>`<div class="profile-card gear-card gear-model ${c.id===camId?'gear-selected':''}" onclick="selectCamera('${c.id}')"><div><h3>${c.name}</h3><p>${c.sensor} · ${c.megapixels} MP · ${c.mount==='fixed'?'Fixed lens':c.mount+' Mount'}${c.ibis?' · IBIS':''}</p></div><div class="chev">${c.id===camId?'✓':'→'}</div></div>`).join('')}</div>`;
 }
 
-function renderCameraModels(brand){renderCameraBrands(brand);}
-
-function renderLensBrands(selectedBrand=null){
-  lensSelectorBrand=selectedBrand;
+function renderLensBrands(){
+  lensSelectorBrand=null;
   document.getElementById('lensSelectorKicker').textContent='LENS';
-  document.getElementById('lensSelectorTitle').textContent='Choose your lens.';
-  document.getElementById('lensSelectorDescription').textContent='Select a brand, then a compatible lens model.';
-  const lenses=Object.values(FRAME_GEAR_DB.lenses);
-  const brandOptions=gearBrands(lenses).map(brand=>`<option value="${brand}" ${brand===selectedBrand?'selected':''}>${brand}</option>`).join('');
-  document.getElementById('lensSelectList').innerHTML=`<div class="gear-native-select-wrap">
-    <select class="gear-native-select" aria-label="Lens brand" onchange="renderLensBrands(this.value)">
-      <option value="" ${selectedBrand?'':'selected'}>Lens brand</option>
-      ${brandOptions}
-    </select>
-  </div>${selectedBrand?lensModelSelect(selectedBrand):''}`;
+  document.getElementById('lensSelectorTitle').textContent='Choose a brand.';
+  document.getElementById('lensSelectorDescription').textContent='Select your lens brand.';
+  document.getElementById('lensSelectList').innerHTML=gearBrandMenu(compatibleLenses(),'lens');
 }
 
-function lensModelSelect(brand){
+function renderLensModels(brand){
+  lensSelectorBrand=brand;
+  document.getElementById('lensSelectorKicker').textContent=brand.toUpperCase();
+  document.getElementById('lensSelectorTitle').textContent='Choose your lens.';
+  document.getElementById('lensSelectorDescription').textContent='Only lenses compatible with your camera are shown.';
   const lensId=selectedLensId();
   const lenses=compatibleLenses().filter(l=>l.brand===brand);
-  return `<div class="gear-native-select-wrap">
-    <select class="gear-native-select gear-model-select" aria-label="${brand} lens model" onchange="if(this.value)selectLens(this.value)">
-      <option value="" ${lensId&&lenses.some(l=>l.id===lensId)?'':'selected'}>${lenses.some(l=>l.id===lensId)?lenses.find(l=>l.id===lensId).name:'Lens model'}</option>
-      ${lenses.filter(l=>l.id!==lensId).map(l=>`<option value="${l.id}">${l.name}</option>`).join('')}
-    </select>
-  </div>`;
+  document.getElementById('lensSelectList').innerHTML=`<div class="gear-models">${lenses.map(l=>`<div class="profile-card gear-card gear-model ${l.id===lensId?'gear-selected':''}" onclick="selectLens('${l.id}')"><div><h3>${l.name}</h3><p>${formatLensRange(l)} · f/${l.maxAperture}–f/${l.minAperture}${l.fixed?' · Built-in':(l.stabilization?' · IS/OSS/VR':'')}</p></div><div class="chev">${l.id===lensId?'✓':'→'}</div></div>`).join('')}</div>`;
 }
-
-function renderLensModels(brand){renderLensBrands(brand);}
 
 function openCameraSelector(){renderCameraBrands();show('camera');}
 function openLensSelector(){renderLensBrands();show('lens');}
@@ -1290,4 +1260,3 @@ document.addEventListener('click', (event)=>{
 <!-- FRAME PRE-BETA BUILD 02 -->
 </body>
 </html>
-```
