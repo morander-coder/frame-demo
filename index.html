@@ -760,9 +760,27 @@ function captureFrame(){
   const v=document.getElementById('cameraPreview');
   const c=document.getElementById('captureCanvas');
   if(!v || !cameraStream || v.readyState<2) return false;
-  c.width=v.videoWidth; c.height=v.videoHeight;
+
+  const track=cameraStream.getVideoTracks()[0];
+  const settings=track ? track.getSettings() : {};
+
+  console.log('FRAME CAMERA SETTINGS', {
+    exposureMode: settings.exposureMode,
+    exposureTime: settings.exposureTime,
+    iso: settings.iso,
+    exposureCompensation: settings.exposureCompensation,
+    brightness: settings.brightness,
+    colorTemperature: settings.colorTemperature,
+    width: settings.width,
+    height: settings.height,
+    frameRate: settings.frameRate
+  });
+
+  c.width=v.videoWidth;
+  c.height=v.videoHeight;
   c.getContext('2d').drawImage(v,0,0,c.width,c.height);
   capturedImage=c.toDataURL('image/jpeg',.9);
+
   return true;
 }
 
