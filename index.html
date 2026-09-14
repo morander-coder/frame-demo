@@ -763,6 +763,7 @@ function captureFrame(){
 
   const track=cameraStream.getVideoTracks()[0];
   const settings=track ? track.getSettings() : {};
+window.frameCameraSettings=settings;
 
   console.log('FRAME CAMERA SETTINGS', {
     exposureMode: settings.exposureMode,
