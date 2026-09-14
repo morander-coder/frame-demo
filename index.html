@@ -1032,7 +1032,12 @@ function renderCameraModels(brand){
   document.getElementById('cameraSelectorDescription').textContent='Select an exact verified model.';
   const camId=selectedCameraId();
   const cams=Object.values(FRAME_GEAR_DB.cameras).filter(c=>c.verified&&c.brand===brand);
-  document.getElementById('cameraSelectList').innerHTML=`<div class="gear-models">${cams.map(c=>`<div class="profile-card gear-card gear-model ${c.id===camId?'gear-selected':''}" onclick="selectCamera('${c.id}')"><div><h3>${c.name}</h3><p>${c.sensor} · ${c.megapixels} MP · ${c.mount==='fixed'?'Fixed lens':c.mount+' Mount'}${c.ibis?' · IBIS':''}</p></div><div class="chev">${c.id===camId?'✓':'→'}</div></div>`).join('')}</div>`;
+  document.getElementById('cameraSelectList').innerHTML=`<div class="gear-native-select-wrap">
+    <select class="gear-native-select gear-model-select" aria-label="${brand} camera model" onchange="if(this.value)selectCamera(this.value)">
+      <option value="" ${camId&&cams.some(c=>c.id===camId)?'':'selected'}>${cams.some(c=>c.id===camId)?cams.find(c=>c.id===camId).name:'Camera model'}</option>
+      ${cams.filter(c=>c.id!==camId).map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+    </select>
+  </div>`;
 }
 
 function renderLensBrands(){
@@ -1050,7 +1055,12 @@ function renderLensModels(brand){
   document.getElementById('lensSelectorDescription').textContent='Only lenses compatible with your camera are shown.';
   const lensId=selectedLensId();
   const lenses=compatibleLenses().filter(l=>l.brand===brand);
-  document.getElementById('lensSelectList').innerHTML=`<div class="gear-models">${lenses.map(l=>`<div class="profile-card gear-card gear-model ${l.id===lensId?'gear-selected':''}" onclick="selectLens('${l.id}')"><div><h3>${l.name}</h3><p>${formatLensRange(l)} · f/${l.maxAperture}–f/${l.minAperture}${l.fixed?' · Built-in':(l.stabilization?' · IS/OSS/VR':'')}</p></div><div class="chev">${l.id===lensId?'✓':'→'}</div></div>`).join('')}</div>`;
+  document.getElementById('lensSelectList').innerHTML=`<div class="gear-native-select-wrap">
+    <select class="gear-native-select gear-model-select" aria-label="${brand} lens model" onchange="if(this.value)selectLens(this.value)">
+      <option value="" ${lensId&&lenses.some(l=>l.id===lensId)?'':'selected'}>${lenses.some(l=>l.id===lensId)?lenses.find(l=>l.id===lensId).name:'Lens model'}</option>
+      ${lenses.filter(l=>l.id!==lensId).map(l=>`<option value="${l.id}">${l.name}</option>`).join('')}
+    </select>
+  </div>`;
 }
 
 function openCameraSelector(){renderCameraBrands();show('camera');}
