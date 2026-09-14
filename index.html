@@ -865,7 +865,7 @@ function applyAIRecommendation(scene){
   document.getElementById('recEV').textContent=values.ev.replace(' EV','');
   document.getElementById('recommendationTitle').textContent=values.title;
   document.getElementById('recommendationSummary').textContent=`${scene.subject} · ${scene.environment} · ${scene.light_level} light · ${scene.movement} movement.`;
-  document.getElementById('recContext').textContent=`${profile.toUpperCase()} · AI SCENE · ${scene.confidence.toUpperCase()} CONFIDENCE`;
+  document.getElementById('recContext').textContent=`${profile.toUpperCase()} · AI SCENE · ${scene.confidence.toUpperCase()} CONFIDENCE · EXPOSURE ${scene.exposure_level} EV`;
   document.getElementById('recWhy').innerHTML=`<strong>WHY</strong> — ${values.why}`;
   document.getElementById('altKicker').textContent=(scene.movement==='High'||scene.movement==='Very High')?'MOTION':'LOOK';
   document.getElementById('altSettings').textContent=`${values.creative.lens} · ${values.creative.aperture} · ${values.creative.shutter} · ISO ${values.creative.iso}`;
